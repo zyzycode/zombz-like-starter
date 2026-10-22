@@ -12,7 +12,7 @@ export type AnimationName = `${CharacterState}_${Direction}`;
 
 export type AttackType = 'melee';
 
-export type DamageType = 'physical';
+export type DamageType = 'physical' | 'magic';
 
 export type TeamId = 'player' | 'enemy' | 'neutral';
 
@@ -118,9 +118,31 @@ export type CharacterRuntime = {
 };
 
 /** Состояние игрока, которое полностью описывает его в мире. */
-export type PlayerState = CharacterRuntime;
+export type AbilityState = {
+  mana: number;
+  maxMana: number;
+  fireboltCooldownMs: number;
+  novaCooldownMs: number;
+  dodgeCooldownMs: number;
+  dodgeRemainingMs: number;
+  novaPulse: number;
+};
 
-export type EnemyState = CharacterRuntime;
+export type ProjectileState = {
+  id: string;
+  sourceId: string;
+  team: TeamId;
+  position: Vector2;
+  velocity: Vector2;
+  radius: number;
+  damage: number;
+  ttlMs: number;
+  color: number;
+};
+
+export type PlayerState = CharacterRuntime & { abilities?: AbilityState };
+
+export type EnemyState = CharacterRuntime & { archetypeId?: string };
 
 /** Состояние разрушаемого объекта на карте. */
 export type DestructibleState = {
@@ -169,5 +191,8 @@ export type InputState = {
   attackPressed: boolean;
   attackHeld: boolean;
   interactPressed: boolean;
+  fireboltPressed?: boolean;
+  novaPressed?: boolean;
+  dodgePressed?: boolean;
   aim: Vector2;
 };

@@ -1,4 +1,4 @@
-import { Character, directionToVector, toCardinalDirection } from '@/game/core/characters/Character';
+import { Character, directionToVector } from '@/game/core/characters/Character';
 import type { AttackController } from '@/game/core/combat/AttackController';
 import type { EnemyArchetype } from '@/game/core/enemies/EnemyArchetype';
 import type { AttackPayload, EnemyState, PlayerState, Vector2 } from '@/shared/types/game';
@@ -37,6 +37,7 @@ export class Enemy extends Character {
     const dy = params.player.position.y - this.position.y;
     const distanceToPlayer = Math.hypot(dx, dy);
     const shouldChase = distanceToPlayer <= params.chaseRange;
+    if (!this.attack.runtime.isActive && (dx !== 0 || dy !== 0)) this.faceTowards(dx, dy);
     const attackUpdate = params.attackController.update(
       this,
       params.deltaMs,
@@ -47,15 +48,17 @@ export class Enemy extends Character {
       params.onHit(attackUpdate.hit);
     }
 
-    const shouldMove = shouldChase && !attackUpdate.isAttacking && distanceToPlayer > params.attackDistance;
-    const movementIntent = shouldMove ? toCardinalDirection(dx, dy) : { x: 0, y: 0 };
+    const ranged = this.archetype.aiProfile.kind === 'ranged' ? this.archetype.aiProfile : null;
+    const retreat = ranged && distanceToPlayer < ranged.preferredRange * 0.7;
+    const approach = distanceToPlayer > (ranged?.preferredRange ?? params.attackDistance);
+    const shouldMove = shouldChase && !attackUpdate.isAttacking && (retreat || approach);
+    const sign = retreat ? -1 : 1;
+    const movementIntent = shouldMove && distanceToPlayer > 0
+      ? { x: dx / distanceToPlayer * sign, y: dy / distanceToPlayer * sign }
+      : { x: 0, y: 0 };
     const isMoving = movementIntent.x !== 0 || movementIntent.y !== 0;
 
     this.move(movementIntent, params.deltaMs, attackUpdate.movementMultiplier, params.resolvePosition);
-
-    if (dx !== 0 || dy !== 0) {
-      this.faceTowards(dx, dy);
-    }
 
     this.state = attackUpdate.isAttacking ? 'attack' : isMoving ? 'walk' : 'idle';
     this.facing = directionToVector(this.direction);
@@ -70,6 +73,6 @@ export class Enemy extends Character {
   }
 
   toState(): EnemyState {
-    return this.toRuntime();
+    return { ...this.toRuntime(), archetypeId: this.archetype.id };
   }
 }
