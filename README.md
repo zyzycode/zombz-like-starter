@@ -4,6 +4,15 @@
 
 Проект уже вышел за рамки пустого шаблона: сейчас это играемый extraction-lite combat prototype с волнами врагов, ресурсными нодами, подбором лута, зоной эвакуации и отдельным React HUD.
 
+## План развития
+
+Игра развивается поэтапно в roguelike с уровнями, наградами и метапрогрессией.
+Текущий scope, порядок этапов и критерии альфы — [docs/ALPHA_PLAN.md](docs/ALPHA_PLAN.md).
+Инженерные правила — [AGENTS.md](AGENTS.md).
+
+Проверки: `npm test` (Node.js 22+, регрессии lifecycle с адаптерами Phaser),
+`npm run build` (TypeScript и production bundle).
+
 ## Как запустить
 
 ```bash

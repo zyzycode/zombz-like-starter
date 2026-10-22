@@ -21,16 +21,21 @@ export class KeyboardController {
   constructor(private readonly scene: Phaser.Scene) {
     this.keys = this.scene.input.keyboard!.addKeys('W,A,S,D,SPACE,E') as MovementKeys;
 
-    // Сохраняем мировые координаты указателя, чтобы корректно считать направление удара.
-    this.scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-      const worldPoint = pointer.positionToCamera(this.scene.cameras.main) as Phaser.Math.Vector2;
-      this.pointerWorld = { x: worldPoint.x, y: worldPoint.y };
-    });
+    this.scene.input.on('pointermove', this.updatePointer);
+    this.scene.input.on('pointerdown', this.updatePointer);
+  }
 
-    this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      const worldPoint = pointer.positionToCamera(this.scene.cameras.main) as Phaser.Math.Vector2;
-      this.pointerWorld = { x: worldPoint.x, y: worldPoint.y };
-    });
+  private updatePointer = (pointer: Phaser.Input.Pointer) => {
+    const worldPoint = pointer.positionToCamera(this.scene.cameras.main) as Phaser.Math.Vector2;
+    this.pointerWorld = { x: worldPoint.x, y: worldPoint.y };
+  };
+
+  destroy() {
+    this.scene.input.off('pointermove', this.updatePointer);
+    this.scene.input.off('pointerdown', this.updatePointer);
+    for (const key of Object.values(this.keys)) {
+      this.scene.input.keyboard?.removeKey(key, true);
+    }
   }
 
   read(): InputState {

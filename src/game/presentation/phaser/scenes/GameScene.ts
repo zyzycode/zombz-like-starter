@@ -3,7 +3,8 @@ import { Camera, type CameraTarget } from '@/game/camera/Camera';
 import { GameWorld } from '@/game/core/world/GameWorld';
 import { KeyboardController } from '@/game/presentation/phaser/input/KeyboardController';
 import { WorldRenderer } from '@/game/presentation/phaser/renderer/WorldRenderer';
-import { createLevelRuntime, loadMapAssetsForScene } from '@/game/session/createLevelRuntime';
+import { createLevelRuntime } from '@/game/session/createLevelRuntime';
+import { loadMapAssetsForScene } from '@/game/presentation/phaser/loading/loadMapAssetsForScene';
 import { useHudStore } from '@/ui/hud/useHudStore';
 
 function formatWaveCountdown(ms: number) {
@@ -26,15 +27,21 @@ export class GameScene extends Phaser.Scene {
   private cameraModel: Camera | null = null;
   private cameraTarget: CameraTarget | null = null;
   private lastCameraShakePulse = 0;
+  private bootController: AbortController | null = null;
 
   constructor() {
     super('game');
   }
 
   create() {
+    this.shutdown();
+    const bootController = new AbortController();
+    this.bootController = bootController;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.once(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
     this.controller = new KeyboardController(this);
     useHudStore.getState().setErrorMessage(null);
-    void this.bootWorld();
+    void this.bootWorld(bootController.signal);
   }
 
   update(_: number, delta: number) {
@@ -97,13 +104,15 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private async bootWorld() {
+  private async bootWorld(signal: AbortSignal) {
     try {
       const selectedLevelId = this.game.registry.get('selectedLevelId') as string | undefined;
       const { builtLevel, runSession } = await createLevelRuntime({
         levelId: selectedLevelId ?? 'my-first-map',
       });
-      await loadMapAssetsForScene(this, builtLevel.map);
+      if (signal.aborted) return;
+      await loadMapAssetsForScene(this, builtLevel.map, signal);
+      if (signal.aborted) return;
       this.world = new GameWorld({
         builtLevel,
         runSession,
@@ -132,6 +141,7 @@ export class GameScene extends Phaser.Scene {
 
       this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
     } catch (error) {
+      if (signal.aborted) return;
       const message = error instanceof Error ? error.message : 'Unknown level boot error';
       console.error('[GameScene] Failed to boot world', error);
       useHudStore.getState().setErrorMessage(message);
@@ -147,8 +157,19 @@ export class GameScene extends Phaser.Scene {
     this.worldRenderer.applyCamera(this.cameraModel);
   }
 
-  shutdown() {
+  private shutdown = () => {
+    this.bootController?.abort();
+    this.bootController = null;
+    this.events.off(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.off(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
+    this.controller?.destroy();
+    this.controller = null;
     this.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this);
     this.worldRenderer?.destroy();
-  }
+    this.worldRenderer = null;
+    this.world = null;
+    this.cameraModel = null;
+    this.cameraTarget = null;
+    this.lastCameraShakePulse = 0;
+  };
 }
