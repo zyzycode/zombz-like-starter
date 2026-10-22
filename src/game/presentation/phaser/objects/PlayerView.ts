@@ -38,7 +38,9 @@ export class PlayerView {
       this.body.setTexture(frame.textureKey, frame.frameIndex);
     }
 
-    this.body.setTint(player.hurtFlashTimerMs > 0 ? 0xffd4d4 : 0xffffff);
+    const dodging = (player.abilities?.dodgeRemainingMs ?? 0) > 0;
+    this.body.setTint(dodging ? 0x9cfff4 : player.hurtFlashTimerMs > 0 ? 0xffd4d4 : 0xffffff);
+    this.body.setAlpha(dodging ? 0.7 : 1);
 
     const hitX = player.position.x + player.facing.x * player.attack.config.range;
     const hitY = player.position.y + player.facing.y * player.attack.config.range;
@@ -46,6 +48,7 @@ export class PlayerView {
     const isActiveFrame = player.attack.runtime.isActive && player.attack.runtime.phase === 'active';
     this.attackArc
       .setPosition(hitX, hitY)
+      .setRadius(player.attack.config.radius)
       .setFillStyle(isActiveFrame ? 0xf97316 : 0xf59e0b, isActiveFrame ? 0.4 : 0.18)
       .setVisible(player.attack.runtime.isActive);
   }

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { RunActions, RunSnapshot } from '@/game/session/RunState';
 
 /** Показатели, которые выводятся в HUD. */
 type HudStats = {
@@ -30,6 +31,10 @@ type HudStats = {
 
 /** Zustand-хранилище для HUD-состояния. */
 type HudStore = {
+  snapshot: RunSnapshot | null;
+  actions: RunActions | null;
+  setRun: (snapshot: RunSnapshot | null) => void;
+  setActions: (actions: RunActions | null) => void;
   ready: boolean;
   errorMessage: string | null;
   stats: HudStats;
@@ -40,6 +45,10 @@ type HudStore = {
 
 /** Глобальный стор HUD для React-слоя. */
 export const useHudStore = create<HudStore>((set) => ({
+  snapshot: null,
+  actions: null,
+  setRun: (snapshot) => set({ snapshot }),
+  setActions: (actions) => set({ actions }),
   ready: false,
   errorMessage: null,
   stats: {

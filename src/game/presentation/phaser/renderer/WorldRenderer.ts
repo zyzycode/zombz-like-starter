@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { Camera } from '@/game/camera/Camera';
 import type { MapDefinition } from '@/game/content/maps/types';
 import type { WorldState } from '@/game/core/world/WorldState';
-import { EffectRenderer } from '@/game/presentation/phaser/renderer/EffectRenderer';
+import { CombatEffectsRenderer } from '@/game/presentation/phaser/renderer/CombatEffectsRenderer';
 import { EntityRenderer } from '@/game/presentation/phaser/renderer/EntityRenderer';
 import { MapRenderer } from '@/game/presentation/phaser/renderer/MapRenderer';
 
@@ -15,12 +15,12 @@ const CAMERA_ZOOM = 1.5;
 export class WorldRenderer {
   private readonly mapRenderer: MapRenderer;
   private readonly entityRenderer: EntityRenderer;
-  private readonly effectRenderer: EffectRenderer;
+  private readonly effectRenderer: CombatEffectsRenderer;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.mapRenderer = new MapRenderer(scene);
     this.entityRenderer = new EntityRenderer(scene);
-    this.effectRenderer = new EffectRenderer();
+    this.effectRenderer = new CombatEffectsRenderer(scene);
   }
 
   initialize(map: MapDefinition, initialState: WorldState, camera: Camera) {

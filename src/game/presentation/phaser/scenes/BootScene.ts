@@ -28,8 +28,8 @@ export class BootScene extends Phaser.Scene {
       }
     }
 
-    this.load.image(DESTRUCTIBLE_TEXTURE_KEY, DESTRUCTIBLE_TEXTURE_PATH);
-    this.load.image(DESTRUCTIBLE_TEXTURE_ALT_KEY, DESTRUCTIBLE_TEXTURE_ALT_PATH);
+    // Campaign has no destructibles; legacy optional textures are absent from this asset pack.
+    // DestructibleView already supplies its own geometric fallback.
     this.load.image(LOOT_TEXTURE_KEY, LOOT_TEXTURE_PATH);
 
     this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, (file: Phaser.Loader.File) => {
@@ -54,6 +54,6 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('game');
+    this.scene.start(this.game.registry.get('selectedLevelId') === 'campaign' ? 'campaign' : 'game');
   }
 }

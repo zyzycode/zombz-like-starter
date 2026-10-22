@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { CampaignScene } from '@/game/presentation/phaser/scenes/CampaignScene';
 import { BootScene } from '@/game/presentation/phaser/scenes/BootScene';
 import { GameScene } from '@/game/presentation/phaser/scenes/GameScene';
 
@@ -13,7 +14,7 @@ export function createGameConfig(
     backgroundColor: '#1f2937',
     width: window.innerWidth,
     height: window.innerHeight,
-    scene: [BootScene, GameScene],
+    scene: [BootScene, GameScene, CampaignScene],
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,

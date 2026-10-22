@@ -38,6 +38,7 @@ export class TiledMapView {
         .renderTexture(0, 0, map.width, map.height)
         .setOrigin(0, 0)
         .setAlpha(layer.opacity)
+        .setTint(map.palette?.tint ?? 0xffffff)
         .setDepth(0);
 
       const stats = this.drawLayer(
