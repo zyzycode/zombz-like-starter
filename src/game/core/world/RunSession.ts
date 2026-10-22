@@ -94,6 +94,11 @@ export class RunSession {
     this.killedEnemies += Math.max(0, count);
   }
 
+  recordClearedWaves(count: number) {
+    if (this.status !== 'running') return;
+    this.wavesCleared += Math.max(0, count);
+  }
+
   setClearedWaveCount(count: number) {
     if (this.status !== 'running') return;
     this.wavesCleared = Math.max(this.wavesCleared, count);

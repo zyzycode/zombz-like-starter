@@ -6,10 +6,13 @@ import type {
   EnemyState,
   ExtractionZoneState,
   PlayerState,
+  ProjectileState,
   ResourceNodeState,
 } from '@/shared/types/game';
 
 export type WorldState = {
+  status?: 'active' | 'cleared' | 'dead';
+  projectiles?: ProjectileState[];
   refs: {
     mapId: string;
     levelId: string;

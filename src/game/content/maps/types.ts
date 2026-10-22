@@ -77,6 +77,7 @@ export type TileLayerDefinition = {
 };
 
 export type MapDefinition = {
+  palette?: { tint: number; background: number; obstacle: number; accent: number };
   id: string;
   version: number;
   width: number;

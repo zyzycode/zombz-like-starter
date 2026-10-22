@@ -1,3 +1,6 @@
+import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
+import { ProjectileSystem } from '@/game/core/combat/ProjectileSystem';
+import type { Stats } from '@/game/core/progression/types';
 import { Player } from '@/game/core/characters/Player';
 import { ExtractionSystem } from '@/game/core/extraction/ExtractionSystem';
 import { ExtractionZone } from '@/game/core/extraction/ExtractionZone';
@@ -27,6 +30,11 @@ import type { InputState, Vector2 } from '@/shared/types/game';
  * обновляет движение/атаку игрока и состояние разрушаемых объектов.
  */
 export class GameWorld {
+  private readonly mode: 'extraction' | 'campaign';
+  private status: 'active' | 'cleared' | 'dead' = 'active';
+  private clearedWaves = 0;
+  private readonly abilities = new AbilitySystem();
+  private readonly projectiles = new ProjectileSystem();
   private readonly levelId: string;
   private readonly map: MapDefinition;
   private readonly collisionGrid: CollisionGrid;
@@ -62,10 +70,12 @@ export class GameWorld {
   private threatLevel: number;
 
   constructor(params: {
+    mode?: 'extraction' | 'campaign';
     builtLevel: BuiltLevel;
     runSession: RunSession;
     runResultGateway: RunResultGateway;
   }) {
+    this.mode = params.mode ?? 'extraction';
     const { builtLevel } = params;
     const state = builtLevel.initialState;
 
@@ -96,6 +106,8 @@ export class GameWorld {
 
   getState(): WorldState {
     return structuredClone({
+      status: this.status,
+      projectiles: this.projectiles.getState(),
       refs: {
         mapId: this.map.id,
         levelId: this.levelId,
@@ -126,7 +138,14 @@ export class GameWorld {
     });
   }
 
+  applyBuild(stats: Stats) { this.player.applyBuild(stats); }
+
+  restoreBetweenLevels() {
+    this.player.hp = Math.min(this.player.maxHp, this.player.hp + Math.ceil(this.player.maxHp * 0.25));
+  }
+
   update(deltaMs: number, input: InputState) {
+    if (this.mode === 'campaign' && this.status !== 'active') return;
     if (this.hitStopRemainingMs > 0) {
       this.hitStopRemainingMs = Math.max(0, this.hitStopRemainingMs - deltaMs);
       this.timeMs += deltaMs;
@@ -165,7 +184,9 @@ export class GameWorld {
       resolvePosition: this.resolveCharacterCollision,
     });
 
+    this.abilities.update({ player: this.player, input, enemies: this.enemies, projectiles: this.projectiles });
     const enemyHits = this.enemyAiSystem.update({
+      projectiles: this.projectiles,
       enemies: this.enemies,
       player: this.player.toState(),
       deltaMs,
@@ -192,6 +213,7 @@ export class GameWorld {
       hits: enemyHits,
       player: this.player,
     });
+    this.projectiles.update(deltaMs, [this.player, ...this.enemies], this.resolveCharacterCollision);
     const playerTookDamage = this.player.hp < playerHpBeforeEnemyHits;
 
     this.resolveWorldDrops(
@@ -222,20 +244,18 @@ export class GameWorld {
       this.runSession.recordEnemyKill(removedEnemyCount);
     }
 
-    this.runSession.setClearedWaveCount(this.waveSystem.getClearedWaveCount(this.enemies.length));
+    const clearedWaves = this.waveSystem.getClearedWaveCount(this.enemies.length);
+    this.runSession.recordClearedWaves(clearedWaves - this.clearedWaves);
+    this.clearedWaves = clearedWaves;
 
-    this.extractionSystem.update({
-      actor: this.player,
-      zones: this.extractionZones,
-      deltaMs,
-      playerTookDamage,
-      runSession: this.runSession,
-    });
-
-    if (!this.player.isAlive) {
-      this.runSession.complete('died');
+    if (this.mode === 'campaign') {
+      if (!this.player.isAlive) this.status = 'dead';
+      else if (this.clearedWaves >= this.maxWaves && this.enemies.length === 0) this.status = 'cleared';
+    } else {
+      this.extractionSystem.update({ actor: this.player, zones: this.extractionZones, deltaMs, playerTookDamage, runSession: this.runSession });
+      if (!this.player.isAlive) this.runSession.complete('died');
+      this.submitRunResultIfNeeded();
     }
-    this.submitRunResultIfNeeded();
 
     const strongestHitStopMs = Math.max(
       playerCombatResult.feedback.hitStopMs,
