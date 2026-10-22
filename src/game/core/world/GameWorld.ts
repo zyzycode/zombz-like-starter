@@ -1,7 +1,6 @@
 import { Player } from '@/game/core/characters/Player';
 import { ExtractionSystem } from '@/game/core/extraction/ExtractionSystem';
 import { ExtractionZone } from '@/game/core/extraction/ExtractionZone';
-import { LocalRunResultGateway } from '@/game/core/extraction/LocalRunResultGateway';
 import { LootResolver } from '@/game/core/extraction/LootResolver';
 import { Enemy } from '@/game/core/characters/Enemy';
 import { DroppedResource } from '@/game/core/objects/DroppedResource';
@@ -65,7 +64,7 @@ export class GameWorld {
   constructor(params: {
     builtLevel: BuiltLevel;
     runSession: RunSession;
-    runResultGateway?: RunResultGateway;
+    runResultGateway: RunResultGateway;
   }) {
     const { builtLevel } = params;
     const state = builtLevel.initialState;
@@ -83,7 +82,7 @@ export class GameWorld {
     this.droppedResources = state.droppedResources.map((item) => new DroppedResource(item));
     this.timeMs = state.timeMs;
     this.runSession = params.runSession;
-    this.runResultGateway = params.runResultGateway ?? new LocalRunResultGateway();
+    this.runResultGateway = params.runResultGateway;
     this.waveSystem = new WaveSystem({
       enabled: builtLevel.level.rules.waves.enabled,
       waveTable: builtLevel.level.rules.waves.table,
@@ -208,14 +207,6 @@ export class GameWorld {
     });
     this.droppedResources = interactionResult.droppedResources;
 
-    this.extractionSystem.update({
-      actor: this.player,
-      zones: this.extractionZones,
-      deltaMs,
-      playerTookDamage,
-      runSession: this.runSession,
-    });
-
     const cleanupResult = this.cleanupSystem.cleanup({
       enemies: this.enemies,
       destructibles: this.destructibles,
@@ -230,6 +221,16 @@ export class GameWorld {
     if (removedEnemyCount > 0) {
       this.runSession.recordEnemyKill(removedEnemyCount);
     }
+
+    this.runSession.setClearedWaveCount(this.waveSystem.getClearedWaveCount(this.enemies.length));
+
+    this.extractionSystem.update({
+      actor: this.player,
+      zones: this.extractionZones,
+      deltaMs,
+      playerTookDamage,
+      runSession: this.runSession,
+    });
 
     if (!this.player.isAlive) {
       this.runSession.complete('died');

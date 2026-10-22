@@ -14,6 +14,7 @@ export type RunSessionState = {
   elapsedMs: number;
   currentThreatLevel: number;
   currentWaveIndex: number;
+  wavesCleared: number;
   collectedResources: number;
   resourceLedger: ResourceLedger;
   killedEnemies: number;
@@ -39,6 +40,7 @@ export class RunSession {
   private elapsedMs: number;
   private currentThreatLevel: number;
   private currentWaveIndex: number;
+  private wavesCleared = 0;
   private readonly resourceLedger: ResourceLedger;
   private killedEnemies: number;
   private readonly playerClassId: string;
@@ -73,24 +75,33 @@ export class RunSession {
   }
 
   setThreatLevel(level: number) {
+    if (this.status !== 'running') return;
     this.currentThreatLevel = Math.max(0, level);
   }
 
   setWaveIndex(index: number) {
+    if (this.status !== 'running') return;
     this.currentWaveIndex = Math.max(0, index);
   }
 
   addCollectedResource(resourceType: ResourceType, amount: number) {
+    if (this.status !== 'running') return;
     this.resourceLedger[resourceType] = Math.max(0, this.resourceLedger[resourceType] + amount);
   }
 
   recordEnemyKill(count = 1) {
+    if (this.status !== 'running') return;
     this.killedEnemies += Math.max(0, count);
+  }
+
+  setClearedWaveCount(count: number) {
+    if (this.status !== 'running') return;
+    this.wavesCleared = Math.max(this.wavesCleared, count);
   }
 
   complete(outcome: RunOutcome) {
     if (this.result) {
-      return this.result;
+      return structuredClone(this.result);
     }
 
     this.status = 'completed';
@@ -99,18 +110,18 @@ export class RunSession {
       runId: this.runId,
       outcome,
       timeSurvivedMs: this.elapsedMs,
-      wavesCleared: this.currentWaveIndex,
+      wavesCleared: this.wavesCleared,
       resourcesCollected: getResourceLedgerTotal(this.resourceLedger),
       resourceLedger: { ...this.resourceLedger },
       enemiesKilled: this.killedEnemies,
       playerClassId: this.playerClassId,
     };
 
-    return this.result;
+    return structuredClone(this.result);
   }
 
   getResult() {
-    return this.result;
+    return structuredClone(this.result);
   }
 
   toState(): RunSessionState {
@@ -120,6 +131,7 @@ export class RunSession {
       elapsedMs: this.elapsedMs,
       currentThreatLevel: this.currentThreatLevel,
       currentWaveIndex: this.currentWaveIndex,
+      wavesCleared: this.wavesCleared,
       collectedResources: getResourceLedgerTotal(this.resourceLedger),
       resourceLedger: { ...this.resourceLedger },
       killedEnemies: this.killedEnemies,

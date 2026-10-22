@@ -21,6 +21,8 @@ export type WaveAdvanceResult = {
  */
 export class WaveDirector {
   private currentWaveIndex = 0;
+  private spawnedWaveCount = 0;
+  private clearedWaveCount = 0;
   private timeUntilNextWaveMs: number;
   private threatLevel = 0;
   private spawnBudget = 0;
@@ -30,7 +32,8 @@ export class WaveDirector {
   }
 
   update(deltaMs: number, activeEnemyCount: number): WaveAdvanceResult {
-    if (this.currentWaveIndex >= this.waveTable.length) {
+    this.recordClearedWave(activeEnemyCount);
+    if (this.spawnedWaveCount >= this.waveTable.length) {
       return { spawnedWave: null };
     }
 
@@ -45,12 +48,13 @@ export class WaveDirector {
       return { spawnedWave: null };
     }
 
-    const nextWave = this.waveTable[this.currentWaveIndex];
+    const nextWave = this.waveTable[this.spawnedWaveCount];
     this.currentWaveIndex = nextWave.waveIndex;
+    this.spawnedWaveCount += 1;
     this.threatLevel = nextWave.spawnBudget;
     this.spawnBudget = nextWave.spawnBudget;
 
-    const upcomingWave = this.waveTable[this.currentWaveIndex];
+    const upcomingWave = this.waveTable[this.spawnedWaveCount];
     this.timeUntilNextWaveMs = upcomingWave?.delayMs ?? 0;
 
     return {
@@ -74,7 +78,15 @@ export class WaveDirector {
     return this.timeUntilNextWaveMs;
   }
 
+  recordClearedWave(activeEnemyCount: number) {
+    if (activeEnemyCount === 0) this.clearedWaveCount = this.spawnedWaveCount;
+  }
+
+  getClearedWaveCount() {
+    return this.clearedWaveCount;
+  }
+
   isCompleted() {
-    return this.currentWaveIndex >= this.waveTable.length && this.timeUntilNextWaveMs === 0;
+    return this.clearedWaveCount === this.waveTable.length;
   }
 }

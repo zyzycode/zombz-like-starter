@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Camera, type CameraTarget } from '@/game/camera/Camera';
+import { LocalRunResultGateway } from '@/game/session/LocalRunResultGateway';
 import { GameWorld } from '@/game/core/world/GameWorld';
 import { KeyboardController } from '@/game/presentation/phaser/input/KeyboardController';
 import { WorldRenderer } from '@/game/presentation/phaser/renderer/WorldRenderer';
@@ -116,6 +117,7 @@ export class GameScene extends Phaser.Scene {
       this.world = new GameWorld({
         builtLevel,
         runSession,
+        runResultGateway: new LocalRunResultGateway(),
       });
 
       const state = this.world.getState();

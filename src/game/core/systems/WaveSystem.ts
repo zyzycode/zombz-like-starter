@@ -79,6 +79,11 @@ export class WaveSystem {
     };
   }
 
+  getClearedWaveCount(activeEnemyCount: number) {
+    this.director.recordClearedWave(activeEnemyCount);
+    return this.director.getClearedWaveCount();
+  }
+
   private spawnWaveEnemies(
     wave: WaveDefinition,
     player: PlayerState,
