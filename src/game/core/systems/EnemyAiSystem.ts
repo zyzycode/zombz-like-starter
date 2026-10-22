@@ -21,13 +21,12 @@ export class EnemyAiSystem {
     for (const enemy of params.enemies) {
       const aiProfile = enemy.archetype.aiProfile;
       const chaseRange = enemy.archetype.aggroRange;
-      const attackRangeBuffer = 'attackRangeBuffer' in aiProfile ? aiProfile.attackRangeBuffer : 0;
 
       enemy.update({
         player: params.player,
         deltaMs: params.deltaMs,
         chaseRange,
-        attackDistance: aiProfile.kind === 'ranged' ? aiProfile.preferredRange + 80 : this.getEnemyAttackDistance(enemy.toState(), params.player, attackRangeBuffer),
+        attackDistance: aiProfile.kind === 'ranged' ? aiProfile.preferredRange + 80 : this.getEnemyAttackDistance(enemy.toState(), params.player),
         attackController: this.attackController,
         onHit: (attack) => {
           if (aiProfile.kind === 'ranged' && params.projectiles) {
@@ -59,7 +58,11 @@ export class EnemyAiSystem {
     });
   }
 
-  private getEnemyAttackDistance(enemy: ReturnType<Enemy['toState']>, player: PlayerState, attackRangeBuffer: number) {
-    return enemy.attack.config.range + enemy.attack.config.radius + player.radius + attackRangeBuffer;
+  private getEnemyAttackDistance(enemy: ReturnType<Enemy['toState']>, player: PlayerState) {
+    const { range, radius } = enemy.attack.config;
+    // Circular slams are centred on the enemy. Directional melee must close to
+    // its actual reach: adding hit radii makes diagonal targets unreachable.
+    if (range === 0) return Math.max(enemy.radius + player.radius, radius + player.radius - 8);
+    return Math.max(enemy.radius + player.radius + 2, range);
   }
 }

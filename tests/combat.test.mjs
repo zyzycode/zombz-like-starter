@@ -73,3 +73,23 @@ test('nova damages enemies around the player and ranged enemies actually shoot',
   assert.equal(projectiles.getState().length, 1);
   assert.equal(projectiles.getState()[0].team, 'enemy');
 });
+
+import { CombatResolver } from '../src/game/core/combat/CombatResolver.ts';
+import { SeparationSystem } from '../src/game/core/systems/SeparationSystem.ts';
+
+test('melee enemies reach an idle player diagonally before beginning their attack', () => {
+  for (const archetype of ['grunt', 'runner', 'brute', 'boss']) {
+    const player = createPlayer();
+    const enemy = createEnemy(`diagonal-${archetype}`, player.position.x - 140, player.position.y - 140, archetype);
+    const ai = new EnemyAiSystem();
+    const resolver = new CombatResolver();
+    const separation = new SeparationSystem();
+    for (let frame = 0; frame < 300 && player.hp === player.maxHp; frame++) {
+      update(player, {}, 16);
+      const hits = ai.update({ enemies: [enemy], player: player.toState(), deltaMs: 16, resolvePosition });
+      separation.separate({ units: [player, enemy], resolvePosition });
+      for (const hit of hits) resolver.resolveAttack(hit, [player]);
+    }
+    assert.ok(player.hp < player.maxHp, `${archetype} must actually hit a stationary diagonal target`);
+  }
+});
