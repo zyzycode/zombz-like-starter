@@ -19,6 +19,7 @@ export class RunController {
   private depth = 1;
   private clearedLevels = 0;
   private lastKills = 0;
+  private lastCacheItem: RunSnapshot['lastCacheItem'] = null;
   private rewards: RunSnapshot['rewards'] = [];
   private error: string | null = null;
   private earnedShards = 0;
@@ -40,12 +41,13 @@ export class RunController {
       phase: this.phase, depth: this.depth, totalLevels: CAMPAIGN.length,
       clearedLevels: this.clearedLevels, stage: CAMPAIGN[this.depth - 1],
       world: this.world?.getState() ?? null, build: this.build.getState(), rewards: structuredClone(this.rewards),
+      lastCacheItem: this.lastCacheItem ? structuredClone(this.lastCacheItem) : null,
       meta: this.meta.getState(), metaError: this.meta.getError(), error: this.error, earnedShards: this.earnedShards,
     };
   }
 
   async startRun() {
-    if (['playing', 'loading', 'reward', 'paused'].includes(this.phase)) return;
+    if (['playing', 'exploring', 'loading', 'reward', 'paused'].includes(this.phase)) return;
     this.session = new RunSession({ playerClassId: 'wanderer' });
     this.build = new RunBuild(this.meta.getState().ranks);
     this.depth = 1;
@@ -57,15 +59,22 @@ export class RunController {
   }
 
   update(deltaMs: number, input: InputState) {
-    if (this.phase !== 'playing' || !this.world) return;
+    if ((this.phase !== 'playing' && this.phase !== 'exploring') || !this.world) return;
     // Bound a background-tab gap and substep movement/projectiles without repeating button edges.
     let remaining = Math.max(0, Math.min(100, deltaMs));
     let stepInput = input;
-    while (remaining > 0 && this.phase === 'playing') {
+    while (remaining > 0 && (this.phase === 'playing' || this.phase === 'exploring')) {
       const step = Math.min(16, remaining);
-      this.world.update(step, stepInput);
+      const exploring = this.phase === 'exploring';
+      if (exploring) this.world.updateExploration(step, stepInput);
+      else this.world.update(step, stepInput);
+      for (const cacheId of this.world.drainOpenedCaches()) {
+        const item = this.build.claimCache(cacheId, this.depth);
+        if (item) this.lastCacheItem = item;
+      }
       remaining -= step;
       stepInput = { ...input, attackPressed: false, interactPressed: false, fireboltPressed: false, novaPressed: false, shieldBashPressed: false, whirlwindPressed: false, frostWavePressed: false, mendPressed: false, dodgePressed: false };
+      if (exploring) continue;
       const state = this.world.getState();
       const kills = state.runSession.killedEnemies;
       if (kills > this.lastKills) {
@@ -81,6 +90,14 @@ export class RunController {
         this.phase = 'reward';
       }
     }
+  }
+
+  exploreArena() {
+    if (this.phase === 'reward' && this.world?.getState().status === 'cleared') this.phase = 'exploring';
+  }
+
+  finishExploration() {
+    if (this.phase === 'exploring') this.phase = 'reward';
   }
 
   async chooseReward(id: string) {
@@ -117,12 +134,13 @@ export class RunController {
   }
 
   togglePause() {
-    if (this.phase === 'playing') this.phase = 'paused';
+    if (this.phase === 'exploring') this.finishExploration();
+    else if (this.phase === 'playing') this.phase = 'paused';
     else if (this.phase === 'paused') this.phase = 'playing';
   }
 
   returnToMenu() {
-    if (['playing', 'paused', 'reward', 'loading', 'error'].includes(this.phase)) {
+    if (['playing', 'exploring', 'paused', 'reward', 'loading', 'error'].includes(this.phase)) {
       this.session.complete('abandoned');
       this.settle(false);
     }
@@ -131,6 +149,7 @@ export class RunController {
     this.world = null;
     this.builtLevel = null;
     this.rewards = [];
+    this.lastCacheItem = null;
     this.error = null;
     this.build = new RunBuild(this.meta.getState().ranks);
   }
@@ -147,6 +166,7 @@ export class RunController {
   private async loadLevel(player?: PlayerState) {
     const generation = ++this.generation;
     this.phase = 'loading';
+    this.lastCacheItem = null;
     this.world = null;
     this.builtLevel = null;
     this.error = null;

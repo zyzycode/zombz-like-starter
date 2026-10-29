@@ -33,6 +33,8 @@ export function Hud() {
   const { world, build, phase } = snapshot;
   const abilities = world?.player.abilities;
   const mana = abilities?.mana ?? build.stats.maxMana;
+  const caches = world?.caches ?? [];
+  const openedCaches = caches.filter((cache) => cache.opened).length;
   const playing = phase === 'playing';
   return <>
     <header className="sidebar-header"><span className="eyebrow">Пепельный путь <b>α</b></span><h2>{phase === 'menu' ? 'Странник' : snapshot.stage.biome}</h2><div className="section-caption muted small"><span>{phase === 'menu' ? 'Готов к новому пути' : `Уровень ${snapshot.depth} / ${snapshot.totalLevels}`}</span><span className="gold">✦ {snapshot.meta.shards}</span></div></header>
@@ -52,8 +54,11 @@ export function Hud() {
       <Ability hotkey="C" name="Восстановление" cooldown={abilities?.mendCooldownMs ?? 0} cost={ACTIVE_ABILITIES.mend.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('mend')} fullHealth={!world || world.player.hp >= world.player.maxHp} description="Изучи в ветке Выживания · восстановление 35% здоровья · 12 с" />
     </section>
     {world && <div className="wave-line"><span>Волна {world.wave.currentWaveIndex}/{world.wave.maxWaves}</span><span>{world.wave.activeEnemies > 0 ? `Врагов: ${world.wave.activeEnemies}` : world.wave.nextWaveInMs > 0 ? `Через ${(world.wave.nextWaveInMs / 1000).toFixed(1)}с` : 'Зачищено'}</span></div>}
+    {caches.length > 0 && <div className="cache-progress"><span>Тайники {openedCaches}/{caches.length}</span><span>{openedCaches < caches.length ? 'Найди · открой на E' : 'Всё найдено'}</span></div>}
+    {snapshot.lastCacheItem && <p className="cache-find" role="status">В рюкзаке: <strong className={`rarity-${snapshot.lastCacheItem.rarity}`}>{snapshot.lastCacheItem.name}</strong></p>}
+    {phase === 'exploring' && <button className="button primary pause-button" onClick={() => actions?.finishExploration()}>К наградам <kbd>Esc</kbd></button>}
     {(playing || phase === 'paused') && <button className="button secondary pause-button" onClick={() => actions?.togglePause()}>{playing ? 'Пауза и развитие' : 'Продолжить бой'} <kbd>Esc</kbd></button>}
-    {build.skillPoints > 0 && <button className="skill-points-banner" onClick={() => { if (playing) actions?.togglePause(); setTab('skills'); }}>Доступно очков навыков: {build.skillPoints} <span>→</span></button>}
+    {build.skillPoints > 0 && <button className="skill-points-banner" onClick={() => { if (playing) actions?.togglePause(); else if (phase === 'exploring') actions?.finishExploration(); setTab('skills'); }}>Доступно очков навыков: {build.skillPoints} <span>→</span></button>}
     <nav className="hud-tabs" aria-label="Панели персонажа">{TABS.map((entry) => <button key={entry.id} className={tab === entry.id ? 'active' : ''} aria-pressed={tab === entry.id} onClick={() => setTab(entry.id)}>{entry.label}</button>)}</nav>
     <div className="hud-tab-content">
       {tab === 'inventory' && <InventoryPanel snapshot={snapshot} actions={actions} />}

@@ -1,3 +1,4 @@
+import type { ExplorationCacheState } from '@/game/core/environment/ExplorationCache';
 import type { RunResult } from '@/game/core/extraction/RunResult';
 import type { RunSessionState } from '@/game/core/world/RunSession';
 import type { RestorationSiteState } from '@/game/core/environment/RestorationSite';
@@ -15,6 +16,7 @@ import type {
 export type WorldState = {
   status?: 'active' | 'cleared' | 'dead';
   projectiles?: ProjectileState[];
+  caches?: ExplorationCacheState[];
   restorationSites?: RestorationSiteState[];
   hazards?: ArenaHazardState[];
   refs: {

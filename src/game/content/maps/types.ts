@@ -1,3 +1,4 @@
+import type { ExplorationCacheDefinition } from '@/game/core/environment/ExplorationCache';
 import type { ResourceNodeType, Vector2 } from '@/shared/types/game';
 import type { RestorationSiteDefinition } from '@/game/core/environment/RestorationSite';
 import type { ArenaHazardDefinition } from '@/game/core/environment/ArenaHazard';
@@ -109,6 +110,7 @@ export type MapDefinition = {
   groundStamps?: GroundStampDefinition[];
   markers: MapMarkerDefinition[];
   props: MapPropDefinition[];
+  caches?: ExplorationCacheDefinition[];
   restorationSites?: RestorationSiteDefinition[];
   hazards?: ArenaHazardDefinition[];
   collision: CollisionShapeDefinition[];

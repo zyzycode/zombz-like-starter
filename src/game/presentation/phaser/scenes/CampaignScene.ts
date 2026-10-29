@@ -39,6 +39,8 @@ export class CampaignScene extends Phaser.Scene {
     };
     useHudStore.getState().setActions({
       startRun: () => act(() => run.startRun()),
+      exploreArena: () => act(() => run.exploreArena()),
+      finishExploration: () => act(() => run.finishExploration()),
       chooseReward: (id) => act(() => run.chooseReward(id)),
       unequip: (slot) => act(() => run.unequip(slot)),
       equip: (id) => act(() => run.equip(id)), learn: (id) => act(() => run.learn(id)),
@@ -108,7 +110,7 @@ export class CampaignScene extends Phaser.Scene {
     useHudStore.getState().setRun(snapshot);
   }
   private pause = () => { this.run?.togglePause(); this.publish(); };
-  private onBlur = () => { if (this.run?.getPhase() === 'playing') this.pause(); };
+  private onBlur = () => { if (this.run?.getPhase() === 'playing' || this.run?.getPhase() === 'exploring') this.pause(); };
   private resize() {
     this.cameraModel?.setViewportSize(this.scale.width, this.scale.height);
     if (this.cameraModel) this.worldRenderer?.applyCamera(this.cameraModel);

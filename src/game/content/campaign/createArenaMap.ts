@@ -1,6 +1,7 @@
 import type { GroundStampDefinition, MapDefinition } from '@/game/content/maps/types';
 import type { CampaignStage } from '@/game/content/campaign/campaign';
 import { ARENA_LAYOUTS, onTrail } from '@/game/content/campaign/arenaLayouts';
+import { createArenaCaches } from '@/game/content/campaign/arenaCaches';
 import { createArenaHazards } from '@/game/content/campaign/arenaHazards';
 import { createArenaScenery } from '@/game/content/campaign/arenaScenery';
 import { environmentAssets, type EnvironmentTheme } from '@/game/content/campaign/flareEnvironmentArt';
@@ -31,14 +32,16 @@ export function createArenaMap(stage: CampaignStage, depth: number): MapDefiniti
       obstacle: 0x686b78, accent: theme === 'grassland' ? 0x8c9270 : theme === 'snowplains' ? 0xb4ced8 : 0xb3a17e },
     originOffset: { x: 0, y: 0 }, renderMode: 'tiled', tileSize: { width: 32, height: 32 },
     arena: { x: 32, y: 32, width: 896, height: 640 },
-    tilesets: environmentAssets(theme), tileLayers: [], groundStamps,
+    tilesets: [...environmentAssets(theme), ...(theme === 'dungeon' ? [] : environmentAssets('dungeon')
+      .filter((asset) => asset.id === 'flare-dungeon-props').map((asset) => ({ ...asset, firstGid: 3001 })))],
+    tileLayers: [], groundStamps,
     markers: [
       { id: 'player', kind: 'player_spawn', position: { x: 480, y: 352 } },
       ...[{ x: 100, y: 100 }, { x: 860, y: 100 }, { x: 860, y: 604 }, { x: 100, y: 604 }].map((position, index) => ({
         id: `spawn-${index}`, kind: 'enemy_spawn' as const, position,
       })),
     ],
-    props: scenery.props, hazards: createArenaHazards(stage),
+    props: scenery.props, hazards: createArenaHazards(stage), caches: createArenaCaches(stage),
     collision: [...layout.islands.map((position, index) => ({ id: `cover-${index}`, kind: 'circle' as const, position: { ...position }, radius: 26 })), ...scenery.collision],
     restorationSites: [{ id: `${stage.id}-spring`, position: layout.restoration, radius: 64, healthFraction: .35, manaFraction: .6 }],
   };

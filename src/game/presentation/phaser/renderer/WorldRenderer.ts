@@ -5,6 +5,7 @@ import type { WorldState } from '@/game/core/world/WorldState';
 import { CombatEffectsRenderer } from '@/game/presentation/phaser/renderer/CombatEffectsRenderer';
 import { EntityRenderer } from '@/game/presentation/phaser/renderer/EntityRenderer';
 import { MapRenderer } from '@/game/presentation/phaser/renderer/MapRenderer';
+import { CacheView } from '@/game/presentation/phaser/objects/CacheView';
 import { HazardView } from '@/game/presentation/phaser/objects/HazardView';
 
 const CAMERA_ZOOM = 1.5;
@@ -18,12 +19,14 @@ export class WorldRenderer {
   private readonly entityRenderer: EntityRenderer;
   private readonly effectRenderer: CombatEffectsRenderer;
   private readonly hazardView: HazardView;
+  private readonly cacheView: CacheView;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.mapRenderer = new MapRenderer(scene);
     this.entityRenderer = new EntityRenderer(scene);
     this.effectRenderer = new CombatEffectsRenderer(scene);
     this.hazardView = new HazardView(scene);
+    this.cacheView = new CacheView(scene);
   }
 
   initialize(map: MapDefinition, initialState: WorldState, camera: Camera) {
@@ -34,8 +37,9 @@ export class WorldRenderer {
 
   render(state: WorldState, deltaMs: number) {
     this.entityRenderer.render(state, deltaMs);
-    this.effectRenderer.render(state, deltaMs);
-    this.hazardView.render(state.hazards ?? []);
+    this.effectRenderer.render(state.status === 'cleared' ? { ...state, projectiles: [] } : state, deltaMs);
+    this.hazardView.render(state.status === 'cleared' ? [] : state.hazards ?? []);
+    this.cacheView.render(state.caches ?? [], state.player);
   }
 
   applyCamera(camera: Camera) {
@@ -60,5 +64,6 @@ export class WorldRenderer {
     this.entityRenderer.destroy();
     this.effectRenderer.destroy();
     this.hazardView.destroy();
+    this.cacheView.destroy();
   }
 }

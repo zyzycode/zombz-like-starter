@@ -1,3 +1,4 @@
+import { CacheSystem } from '@/game/core/environment/CacheSystem';
 import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
 import { RestorationSystem } from '@/game/core/environment/RestorationSystem';
 import { HazardSystem } from '@/game/core/environment/HazardSystem';
@@ -36,6 +37,8 @@ export class GameWorld {
   private status: 'active' | 'cleared' | 'dead' = 'active';
   private clearedWaves = 0;
   private readonly abilities = new AbilitySystem();
+  private readonly caches: CacheSystem;
+  private openedCaches: string[] = [];
   private readonly restoration: RestorationSystem;
   private readonly hazards: HazardSystem;
   private readonly projectiles = new ProjectileSystem();
@@ -82,6 +85,7 @@ export class GameWorld {
     this.mode = params.mode ?? 'extraction';
     const { builtLevel } = params;
     const state = builtLevel.initialState;
+    this.caches = new CacheSystem(builtLevel.map.caches ?? []);
     this.restoration = new RestorationSystem(state.restorationSites ?? []);
     this.hazards = new HazardSystem(builtLevel.map.hazards ?? []);
 
@@ -114,6 +118,7 @@ export class GameWorld {
     return structuredClone({
       status: this.status,
       projectiles: this.projectiles.getState(),
+      caches: this.caches.getState(),
       restorationSites: this.restoration.getState(),
       hazards: this.hazards.getState(),
       refs: {
@@ -144,6 +149,24 @@ export class GameWorld {
         cameraShakeIntensity: this.cameraShakeIntensity,
       },
     });
+  }
+
+  drainOpenedCaches(): string[] {
+    const opened = this.openedCaches;
+    this.openedCaches = [];
+    return opened;
+  }
+
+  updateExploration(deltaMs: number, input: InputState) {
+    if (this.mode !== 'campaign' || this.status !== 'cleared' || !this.player.isAlive || this.runSession.getResult()) return;
+    this.player.moveInExploration(input, deltaMs, this.resolveCharacterCollision);
+    this.interactWithEnvironment(input);
+  }
+
+  private interactWithEnvironment(input: InputState) {
+    const cacheId = this.caches.tryOpen(this.player, input);
+    if (cacheId !== null) this.openedCaches.push(cacheId);
+    else this.restoration.update(this.player, input);
   }
 
   setUnlockedAbilities(ids: readonly ActiveAbilityId[]) { this.player.setUnlockedAbilities(ids); }
@@ -239,7 +262,7 @@ export class GameWorld {
       interactables: [...this.resourceNodes],
     });
     this.droppedResources = interactionResult.droppedResources;
-    this.restoration.update(this.player, input);
+    this.interactWithEnvironment(input);
 
     const cleanupResult = this.cleanupSystem.cleanup({
       enemies: this.enemies,

@@ -3,7 +3,7 @@ import type { RunBuild } from '@/game/core/progression/RunBuild';
 import type { Item, ItemSlot, SkillId } from '@/game/core/progression/types';
 import type { MetaProgression } from '@/game/core/meta/MetaProgression';
 
-export type RunPhase = 'menu' | 'loading' | 'playing' | 'paused' | 'reward' | 'won' | 'lost' | 'error';
+export type RunPhase = 'menu' | 'loading' | 'playing' | 'exploring' | 'paused' | 'reward' | 'won' | 'lost' | 'error';
 import type { StageInfo } from '@/game/content/campaign/campaign';
 export type RunSnapshot = {
   phase: RunPhase;
@@ -14,6 +14,7 @@ export type RunSnapshot = {
   world: WorldState | null;
   build: ReturnType<RunBuild['getState']>;
   rewards: Item[];
+  lastCacheItem: Item | null;
   meta: ReturnType<MetaProgression['getState']>;
   metaError: string | null;
   error: string | null;
@@ -22,6 +23,8 @@ export type RunSnapshot = {
 export type RunActions = {
   startRun(): void;
   chooseReward(id: string): void;
+  exploreArena(): void;
+  finishExploration(): void;
   equip(id: string): void;
   unequip(slot: ItemSlot): void;
   learn(id: SkillId): void;

@@ -17,6 +17,7 @@ export class RunBuild {
   private equipment: Partial<Record<ItemSlot, string>> = {};
   private rewards: Item[] = [];
   private rewardSequence = 0;
+  private readonly claimedCaches = new Set<string>();
   private readonly metaRanks: MetaRanks;
 
   constructor(metaRanks: Partial<MetaRanks> = {}, private readonly random: () => number = Math.random) {
@@ -53,25 +54,33 @@ export class RunBuild {
     const slots: readonly ItemSlot[] = tier % 2 === 1
       ? ['weapon', 'armor', 'charm'] : ['weapon', 'helmet', 'boots'];
     this.rewardSequence += 1;
-    this.rewards = slots.map((slot, index) => {
-      const roll = this.roll();
-      const rarity: Rarity = roll < 0.12 + tier * 0.015 ? 'epic' : roll < 0.43 + tier * 0.02 ? 'rare' : 'common';
-      const multiplier = rarity === 'epic' ? 1.8 : rarity === 'rare' ? 1.35 : 1;
-      const strength = (1 + tier * 0.2) * multiplier;
-      const candidates = ITEM_DEFINITIONS.filter((item) => item.slot === slot);
-      const definition = candidates[Math.floor(this.roll() * candidates.length)];
-      if (!definition) throw new Error(`Нет предметов для слота ${slot}`);
-      const bonuses: Partial<Stats> = {};
-      for (const key of Object.keys(definition.baseBonuses) as (keyof Stats)[]) {
-        const value = (definition.baseBonuses[key] ?? 0) * strength;
-        bonuses[key] = key === 'spellPower' ? Math.round(value * 100) / 100 : Math.round(value);
-      }
-      return {
-        id: `reward-${this.rewardSequence}-${index}`, definitionId: definition.id,
-        name: definition.name, description: definition.description, slot, rarity, bonuses,
-      };
-    });
+    this.rewards = slots.map((slot, index) => this.createItem(slot, tier, `reward-${this.rewardSequence}-${index}`));
     return structuredClone(this.rewards);
+  }
+
+  claimCache(cacheId: string, depth: number): Item | null {
+    if (!cacheId || this.claimedCaches.has(cacheId)) return null;
+    const tier = Math.max(1, Math.min(10, Math.floor(Number.isFinite(depth) ? depth : 1)));
+    const slot = ITEM_SLOTS[Math.floor(this.roll() * ITEM_SLOTS.length)];
+    const item = this.createItem(slot, tier, `cache:${cacheId}`);
+    this.claimedCaches.add(cacheId);
+    this.inventory.push(item);
+    return structuredClone(item);
+  }
+
+  private createItem(slot: ItemSlot, tier: number, id: string): Item {
+    const roll = this.roll();
+    const rarity: Rarity = roll < 0.12 + tier * 0.015 ? 'epic' : roll < 0.43 + tier * 0.02 ? 'rare' : 'common';
+    const strength = (1 + tier * 0.2) * (rarity === 'epic' ? 1.8 : rarity === 'rare' ? 1.35 : 1);
+    const candidates = ITEM_DEFINITIONS.filter((item) => item.slot === slot);
+    const definition = candidates[Math.floor(this.roll() * candidates.length)];
+    if (!definition) throw new Error(`Нет предметов для слота ${slot}`);
+    const bonuses: Partial<Stats> = {};
+    for (const key of Object.keys(definition.baseBonuses) as (keyof Stats)[]) {
+      const value = (definition.baseBonuses[key] ?? 0) * strength;
+      bonuses[key] = key === 'spellPower' ? Math.round(value * 100) / 100 : Math.round(value);
+    }
+    return { id, definitionId: definition.id, name: definition.name, description: definition.description, slot, rarity, bonuses };
   }
 
   claimReward(itemId: string): boolean {

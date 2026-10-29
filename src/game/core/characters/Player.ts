@@ -124,6 +124,15 @@ export class Player extends Character {
     this.state = attackUpdate.isAttacking ? 'attack' : isMoving ? 'walk' : 'idle';
   }
 
+  moveInExploration(input: InputState, deltaMs: number, resolvePosition: (position: Vector2, radius: number) => Vector2) {
+    if (!this.isAlive) return;
+    const x = Number(input.right) - Number(input.left), y = Number(input.down) - Number(input.up);
+    const length = Math.hypot(x, y) || 1;
+    if (x || y) this.faceTowards(x, y);
+    this.move({ x: x / length, y: y / length }, deltaMs, 1, resolvePosition);
+    this.state = x || y ? 'walk' : 'idle';
+  }
+
   setFrostWaveDirection(direction: PlayerState['direction']) { this.abilities.frostWaveDirection = direction; }
 
   setShieldBashDirection(direction: PlayerState['direction']) { this.abilities.shieldBashDirection = direction; }

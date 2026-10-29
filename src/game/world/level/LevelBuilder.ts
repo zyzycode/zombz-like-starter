@@ -49,6 +49,7 @@ export class LevelBuilder {
       spatialGrid,
       enemySpawnPoints,
       initialState: {
+        caches: (map.caches ?? []).map((cache) => ({ ...structuredClone(cache), opened: false })),
         restorationSites: (map.restorationSites ?? []).map((site) => ({ ...structuredClone(site), used: false })),
         refs: {
           mapId: map.id,
