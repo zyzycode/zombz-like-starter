@@ -1,4 +1,6 @@
 import { ITEM_DEFINITIONS } from '@/game/content/items/itemCatalog';
+import { ACTIVE_ABILITY_SLOTS, DEFAULT_ABILITY_LOADOUT } from '@/game/core/combat/activeAbilities';
+import type { AbilityLoadout, ActiveAbilityId, ActiveAbilitySlot } from '@/game/core/progression/types';
 import { ITEM_SLOTS } from '@/game/core/progression/types';
 import { SKILLS } from '@/game/core/progression/skills';
 import type { EquipmentPreview, EquipmentPreviews, BuildState, Item, ItemSlot, MetaRanks, Rarity, SkillId, Stats } from '@/game/core/progression/types';
@@ -15,6 +17,7 @@ export class RunBuild {
   private skills: Record<SkillId, number> = { warrior1: 0, warrior2: 0, warrior3: 0, mage1: 0, mage2: 0, mage3: 0, survivor1: 0, survivor2: 0, survivor3: 0 };
   private inventory: Item[] = [];
   private equipment: Partial<Record<ItemSlot, string>> = {};
+  private abilityLoadout: AbilityLoadout = { ...DEFAULT_ABILITY_LOADOUT };
   private rewards: Item[] = [];
   private rewardSequence = 0;
   private readonly claimedCaches = new Set<string>();
@@ -33,7 +36,7 @@ export class RunBuild {
     return structuredClone({
       level: this.level, xp: this.xp, xpToNext: this.xpToNext(), skillPoints: this.skillPoints,
       unlockedAbilities: SKILLS.flatMap((skill) => skill.unlocksAbility && this.skills[skill.id] > 0 ? [skill.unlocksAbility] : []),
-      skills: this.skills, inventory: this.inventory, equipment: this.equipment, stats, equipmentPreviews: this.createEquipmentPreviews(stats),
+      skills: this.skills, inventory: this.inventory, equipment: this.equipment, abilityLoadout: this.abilityLoadout, stats, equipmentPreviews: this.createEquipmentPreviews(stats),
     });
   }
 
@@ -137,6 +140,15 @@ export class RunBuild {
     if (definition.prerequisite && this.skills[definition.prerequisite] === 0) return false;
     this.skills[skillId] += 1;
     this.skillPoints -= 1;
+    return true;
+  }
+
+  assignAbility(slot: ActiveAbilitySlot, id: ActiveAbilityId | null): boolean {
+    if (!ACTIVE_ABILITY_SLOTS.includes(slot) || this.abilityLoadout[slot] === id) return false;
+    if (id !== null && !SKILLS.some((skill) => skill.unlocksAbility === id && this.skills[skill.id] > 0)) return false;
+    const otherSlot = id === null ? undefined : ACTIVE_ABILITY_SLOTS.find((other) => this.abilityLoadout[other] === id);
+    if (otherSlot) this.abilityLoadout[otherSlot] = this.abilityLoadout[slot];
+    this.abilityLoadout[slot] = id;
     return true;
   }
 

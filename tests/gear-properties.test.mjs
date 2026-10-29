@@ -88,7 +88,7 @@ test('recovery affects newly cast spells only, leaves mana costs and ticking int
 });
 
 test('control gear lengthens shield and frost stun before boss resistance, while excluded targets stay untouched', () => {
-  for (const [button, duration] of [['shieldBashPressed', 1400], ['frostWavePressed', 800]]) {
+  for (const [button, duration] of [['shieldBashPressed', 1400], ['slotXPressed', 800]]) {
     const player = createPlayer(); player.position = { x: 0, y: 0 };
     player.setUnlockedAbilities(['frostWave']);
     player.applyBuild({ ...baseStats(), stunDurationBonus: .5 });

@@ -1,4 +1,7 @@
-import type { ActiveAbilityId } from '@/game/core/progression/types';
+import type { AbilityLoadout, ActiveAbilityId, ActiveAbilitySlot } from '@/game/core/progression/types';
+
+export const ACTIVE_ABILITY_SLOTS: readonly ActiveAbilitySlot[] = ['z', 'x', 'c'];
+export const DEFAULT_ABILITY_LOADOUT: Readonly<AbilityLoadout> = { z: 'whirlwind', x: 'frostWave', c: 'mend' };
 
 export const ACTIVE_ABILITY_IDS: readonly ActiveAbilityId[] = ['whirlwind', 'frostWave', 'mend'];
 

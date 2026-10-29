@@ -1,7 +1,7 @@
-import { ACTIVE_ABILITIES, ACTIVE_ABILITY_IDS, isActiveAbility } from '@/game/core/combat/activeAbilities';
+import { ACTIVE_ABILITIES, ACTIVE_ABILITY_IDS, DEFAULT_ABILITY_LOADOUT, isActiveAbility } from '@/game/core/combat/activeAbilities';
 import { Character } from '@/game/core/characters/Character';
 import type { AttackController } from '@/game/core/combat/AttackController';
-import type { ActiveAbilityId, BuildResourcePolicy, Stats } from '@/game/core/progression/types';
+import type { AbilityLoadout, ActiveAbilitySlot, ActiveAbilityId, BuildResourcePolicy, Stats } from '@/game/core/progression/types';
 import type { StatusEffect, AbilityState, AttackPayload, DamageType, InputState, PlayerState, Vector2 } from '@/shared/types/game';
 
 const SPELLS = {
@@ -15,6 +15,7 @@ const SPELLS = {
 export class Player extends Character {
   private abilities: AbilityState;
   private unlockedAbilities = new Set<ActiveAbilityId>();
+  private abilityLoadout: AbilityLoadout = { ...DEFAULT_ABILITY_LOADOUT };
   private manaRegen = 10;
   private armor = 0;
   spellPower = 1;
@@ -53,6 +54,8 @@ export class Player extends Character {
   }
 
   setUnlockedAbilities(ids: readonly ActiveAbilityId[]) { this.unlockedAbilities = new Set(ids); }
+  setAbilityLoadout(loadout: AbilityLoadout) { this.abilityLoadout = { ...loadout }; }
+  getSlotAbility(slot: ActiveAbilitySlot) { return this.abilityLoadout[slot]; }
 
   getAbilities(): AbilityState { return { ...this.abilities }; }
 
@@ -68,7 +71,7 @@ export class Player extends Character {
 
   cast(spell: keyof typeof SPELLS): boolean {
     if (!this.isAlive || this.stunRemainingMs > 0 || this.abilities.dodgeRemainingMs > 0) return false;
-    if (isActiveAbility(spell) && !this.unlockedAbilities.has(spell)) return false;
+    if (isActiveAbility(spell) && (!this.unlockedAbilities.has(spell) || !Object.values(this.abilityLoadout).includes(spell))) return false;
     if (spell === 'mend' && this.hp >= this.maxHp) return false;
     const { cooldownKey: key, manaCost: cost, cooldownMs } = SPELLS[spell];
     if (this.abilities[key] > 0 || this.abilities.mana < cost) return false;
@@ -117,7 +120,7 @@ export class Player extends Character {
     if (!this.attack.runtime.isActive) {
       const aimX = input.aim.x - this.position.x;
       const aimY = input.aim.y - this.position.y;
-      const aiming = input.attackPressed || input.attackHeld || input.fireboltPressed || input.novaPressed || input.shieldBashPressed || input.whirlwindPressed || input.frostWavePressed;
+      const aiming = input.attackPressed || input.attackHeld || input.fireboltPressed || input.novaPressed || input.shieldBashPressed || input.slotZPressed || input.slotXPressed;
       if (isMoving && !aiming) this.faceTowards(x, y);
       else if (aimX || aimY) this.faceTowards(aimX, aimY);
       else if (isMoving) this.faceTowards(x, y);

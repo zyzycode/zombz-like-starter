@@ -1,7 +1,7 @@
 import { ELITE_BONUS_XP } from '@/game/core/enemies/eliteModifiers';
 import { RunBuild } from '@/game/core/progression/RunBuild';
 import { MetaProgression } from '@/game/core/meta/MetaProgression';
-import type { ItemSlot, MetaUpgradeId, SkillId } from '@/game/core/progression/types';
+import type { ActiveAbilityId, ActiveAbilitySlot, ItemSlot, MetaUpgradeId, SkillId } from '@/game/core/progression/types';
 import { RunSession } from '@/game/core/world/RunSession';
 import { GameWorld } from '@/game/core/world/GameWorld';
 import type { BuiltLevel } from '@/game/world/level/types';
@@ -82,7 +82,7 @@ export class RunController {
         if (item) this.lastCacheItem = item;
       }
       remaining -= step;
-      stepInput = { ...input, attackPressed: false, interactPressed: false, fireboltPressed: false, novaPressed: false, shieldBashPressed: false, whirlwindPressed: false, frostWavePressed: false, mendPressed: false, dodgePressed: false };
+      stepInput = { ...input, attackPressed: false, interactPressed: false, fireboltPressed: false, novaPressed: false, shieldBashPressed: false, slotZPressed: false, slotXPressed: false, slotCPressed: false, dodgePressed: false };
       if (exploring) continue;
       const state = this.world.getState();
       const kills = state.runSession.killedEnemies;
@@ -151,6 +151,12 @@ export class RunController {
     const build = this.build.getState();
     this.world?.applyBuild(build.stats);
     this.world?.setUnlockedAbilities(build.unlockedAbilities);
+    this.world?.setAbilityLoadout(build.abilityLoadout);
+  }
+
+  assignAbility(slot: ActiveAbilitySlot, id: ActiveAbilityId | null) {
+    if (!this.canEditBuild() || !this.build.assignAbility(slot, id)) return;
+    this.world?.setAbilityLoadout(this.build.getState().abilityLoadout);
   }
 
   buyMetaUpgrade(id: MetaUpgradeId) {
@@ -204,6 +210,7 @@ export class RunController {
       const build = this.build.getState();
       world.applyBuild(build.stats);
       world.setUnlockedAbilities(build.unlockedAbilities);
+      world.setAbilityLoadout(build.abilityLoadout);
       this.builtLevel = builtLevel;
       this.world = world;
       this.phase = 'playing';

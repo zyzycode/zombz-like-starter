@@ -11,6 +11,7 @@ import { LocalMetaProfileRepository } from '../src/game/session/LocalMetaProfile
 
 const idle = { up: false, down: false, left: false, right: false, attackPressed: false, attackHeld: false, interactPressed: false, aim: { x: 1000, y: 0 } };
 const abilities = ['whirlwind', 'frostWave', 'mend'];
+const slotInput = { whirlwind: 'slotZPressed', frostWave: 'slotXPressed', mend: 'slotCPressed' };
 function combatFixture() {
   const player = createPlayer();
   player.position = { x: 0, y: 0 };
@@ -46,8 +47,8 @@ test('active skills require branch prerequisites and points, cannot rank twice, 
 test('whirlwind hits around the wearer once, while frost is aimed and stuns surviving targets', () => {
   const whirl = combatFixture(); whirl.player.setUnlockedAbilities(['whirlwind']);
   const front = createEnemy('front', 60, 0), back = createEnemy('back', -60, 0), far = createEnemy('far', 300, 0);
-  whirl.cast({ whirlwindPressed: true }, [front, back, far]);
-  whirl.cast({ whirlwindPressed: true }, [front, back, far]);
+  whirl.cast({ slotZPressed: true }, [front, back, far]);
+  whirl.cast({ slotZPressed: true }, [front, back, far]);
   assert.equal(front.hp, 25); assert.equal(back.hp, 25); assert.equal(far.hp, 100);
   assert.equal(whirl.player.getAbilities().mana, 70);
   assert.equal(whirl.player.getAbilities().whirlwindCooldownMs, 4000);
@@ -55,7 +56,7 @@ test('whirlwind hits around the wearer once, while frost is aimed and stuns surv
 
   const frost = combatFixture(); frost.player.setUnlockedAbilities(['frostWave']);
   const target = createEnemy('target', 150, 0), rear = createEnemy('rear', -80, 0), boss = createEnemy('boss', 100, 0, 'boss');
-  frost.cast({ frostWavePressed: true }, [target, rear, boss]);
+  frost.cast({ slotXPressed: true }, [target, rear, boss]);
   assert.equal(target.hp, 60); assert.equal(target.stunRemainingMs, 800);
   assert.equal(rear.hp, 100); assert.equal(rear.stunRemainingMs, 0);
   assert.equal(boss.hp, boss.maxHp - 40); assert.equal(boss.stunRemainingMs, 200);
@@ -76,7 +77,7 @@ test('locked or unaffordable active abilities and dodge, stun or death cannot co
       if (rejection === 'dead') state.hp = 0;
       player.applyResolvedState(state);
       const before = player.toState();
-      cast({ [`${ability}Pressed`]: true });
+      cast({ [slotInput[ability]]: true });
       assert.deepEqual(player.toState(), before, `${ability}: ${rejection}`);
     }
   }
@@ -84,11 +85,11 @@ test('locked or unaffordable active abilities and dodge, stun or death cannot co
 
 test('mend restores 35 percent maximum HP with a cap; full health is a free rejection', () => {
   const full = combatFixture(); full.player.setUnlockedAbilities(['mend']);
-  const before = full.player.toState(); full.cast({ mendPressed: true });
+  const before = full.player.toState(); full.cast({ slotCPressed: true });
   assert.deepEqual(full.player.toState(), before);
   for (const [health, expected] of [[10, 45], [90, 100]]) {
     const { player, cast } = combatFixture(); player.setUnlockedAbilities(['mend']); player.hp = health;
-    cast({ mendPressed: true }); cast({ mendPressed: true });
+    cast({ slotCPressed: true }); cast({ slotCPressed: true });
     assert.equal(player.hp, expected);
     assert.equal(player.getAbilities().mana, 55);
     assert.equal(player.getAbilities().mendCooldownMs, 12000);
@@ -113,11 +114,11 @@ test('campaign learns actives, carries cooldown across levels, freezes on pause/
   run.getWorld().hitStopRemainingMs = 0;
   const steps = [], world = run.getWorld(), update = world.update.bind(world);
   world.update = (deltaMs, input) => { steps.push(input); update(deltaMs, input); };
-  run.update(100, { ...idle, whirlwindPressed: true, frostWavePressed: true, mendPressed: true });
+  run.update(100, { ...idle, slotZPressed: true, slotXPressed: true, slotCPressed: true });
   assert.ok(steps.length > 1);
   for (const ability of abilities) {
-    assert.equal(steps[0][`${ability}Pressed`], true);
-    assert.ok(steps.slice(1).every(input => input[`${ability}Pressed`] === false));
+    assert.equal(steps[0][slotInput[ability]], true);
+    assert.ok(steps.slice(1).every(input => input[slotInput[ability]] === false));
   }
   const state = world.player.toState(); state.abilities.whirlwindCooldownMs = 0;
   world.player.applyResolvedState(state);

@@ -96,7 +96,7 @@ test('post-clear exploration retains the world and offer, freezes combat, awards
   world.player.applyResolvedState(player); world.setUnlockedAbilities(['whirlwind', 'frostWave', 'mend']);
   const combatBefore = world.getState();
   run.exploreArena(); assert.equal(run.getPhase(), 'exploring');
-  run.update(100, { ...idle, right: true, attackPressed: true, attackHeld: true, fireboltPressed: true, novaPressed: true, shieldBashPressed: true, whirlwindPressed: true, frostWavePressed: true, mendPressed: true });
+  run.update(100, { ...idle, right: true, attackPressed: true, attackHeld: true, fireboltPressed: true, novaPressed: true, shieldBashPressed: true, slotZPressed: true, slotXPressed: true, slotCPressed: true });
   assert.equal(run.getWorld(), world);
   assert.ok(world.player.position.x > combatBefore.player.position.x);
   assert.equal(world.player.hp, 50);

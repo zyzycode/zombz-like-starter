@@ -4,7 +4,7 @@ import type { ItemDefinition } from '@/game/core/progression/types';
 export const ITEM_DEFINITIONS: readonly ItemDefinition[] = [
   {
     id: 'weapon-guard-blade', name: 'Клинок стража', slot: 'weapon',
-    description: 'Усиливает ближние удары и продлевает стан Удара щитом (F) и Ледяной волны (X).',
+    description: 'Усиливает ближние удары и продлевает стан Удара щитом (F) и Ледяной волны.',
     baseBonuses: { damage: 14, stunDurationBonus: 0.1 },
   },
   {
@@ -34,7 +34,7 @@ export const ITEM_DEFINITIONS: readonly ItemDefinition[] = [
   },
   {
     id: 'charm-iron-seal', name: 'Железная печать', slot: 'charm',
-    description: 'Добавляет урон и броню, продлевает стан Удара щитом (F) и Ледяной волны (X).',
+    description: 'Добавляет урон и броню, продлевает стан Удара щитом (F) и Ледяной волны.',
     baseBonuses: { damage: 6, armor: 1, stunDurationBonus: 0.08 },
   },
   {

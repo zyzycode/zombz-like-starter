@@ -10,14 +10,19 @@ export class AbilitySystem {
 
   update(params: { player: Player; input: InputState; enemies: Enemy[]; projectiles: ProjectileSystem }) {
     const { player, input, projectiles } = params;
-    if (input.whirlwindPressed && player.cast('whirlwind')) {
+    const requested = new Set([
+      input.slotZPressed ? player.getSlotAbility('z') : null,
+      input.slotXPressed ? player.getSlotAbility('x') : null,
+      input.slotCPressed ? player.getSlotAbility('c') : null,
+    ]);
+    if (requested.has('whirlwind') && player.cast('whirlwind')) {
       this.resolver.resolveAttack({
         sourceId: player.id, team: player.team, type: 'melee', damageType: 'physical',
         damage: player.attack.config.damage * 1.5, range: 0, radius: 125,
         direction: player.direction, origin: { ...player.position }, knockback: 0, hitStopMs: 0,
       }, params.enemies);
     }
-    if (input.frostWavePressed && player.cast('frostWave')) {
+    if (requested.has('frostWave') && player.cast('frostWave')) {
       const direction = vectorToDirection(input.aim.x - player.position.x, input.aim.y - player.position.y) ?? player.direction;
       player.setFrostWaveDirection(direction);
       this.resolver.resolveAttack({
@@ -27,7 +32,7 @@ export class AbilitySystem {
         statusEffects: [{ kind: 'stun', durationMs: Math.round(800 * (1 + player.stunDurationBonus)) }],
       }, params.enemies);
     }
-    if (input.mendPressed && player.cast('mend')) player.restoreResources(0.35, 0);
+    if (requested.has('mend') && player.cast('mend')) player.restoreResources(0.35, 0);
     if (input.shieldBashPressed && player.cast('shieldBash')) {
       const direction = vectorToDirection(input.aim.x - player.position.x, input.aim.y - player.position.y) ?? player.direction;
       player.setShieldBashDirection(direction);

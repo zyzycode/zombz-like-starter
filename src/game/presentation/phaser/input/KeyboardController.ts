@@ -58,9 +58,9 @@ export class KeyboardController {
     const fireboltPressed = this.keys.Q.isDown && !this.previousAbilities.Q;
     const novaPressed = this.keys.R.isDown && !this.previousAbilities.R;
     const shieldBashPressed = this.keys.F.isDown && !this.previousAbilities.F;
-    const whirlwindPressed = this.keys.Z.isDown && !this.previousAbilities.Z;
-    const frostWavePressed = this.keys.X.isDown && !this.previousAbilities.X;
-    const mendPressed = this.keys.C.isDown && !this.previousAbilities.C;
+    const slotZPressed = this.keys.Z.isDown && !this.previousAbilities.Z;
+    const slotXPressed = this.keys.X.isDown && !this.previousAbilities.X;
+    const slotCPressed = this.keys.C.isDown && !this.previousAbilities.C;
     const dodgePressed = this.keys.SHIFT.isDown && !this.previousAbilities.SHIFT;
     this.previousAbilities = { Q: this.keys.Q.isDown, R: this.keys.R.isDown, F: this.keys.F.isDown, Z: this.keys.Z.isDown, X: this.keys.X.isDown, C: this.keys.C.isDown, SHIFT: this.keys.SHIFT.isDown };
 
@@ -76,9 +76,9 @@ export class KeyboardController {
       fireboltPressed,
       novaPressed,
       shieldBashPressed,
-      whirlwindPressed,
-      frostWavePressed,
-      mendPressed,
+      slotZPressed,
+      slotXPressed,
+      slotCPressed,
       dodgePressed,
       aim: this.pointerWorld,
     };

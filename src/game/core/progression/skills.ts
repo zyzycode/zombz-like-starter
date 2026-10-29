@@ -17,7 +17,7 @@ export const SKILLS: readonly SkillDefinition[] = [
   { id: 'mage2', name: 'Источник маны', description: '+25 маны и +3 восстановления за ранг', prerequisite: 'mage1', maxRank: 3, bonuses: { maxMana: 25, manaRegen: 3 } },
   { id: 'survivor1', name: 'Выносливость', description: '+25 максимального здоровья за ранг', prerequisite: null, maxRank: 3, bonuses: { maxHp: 25 } },
   { id: 'survivor2', name: 'Лёгкий шаг', description: '+20 скорости и +2 брони за ранг', prerequisite: 'survivor1', maxRank: 3, bonuses: { moveSpeed: 20, armor: 2 } },
-  { id: 'warrior3', name: 'Вихрь · Z', description: 'Круговой удар: 150% урона оружия. 30 маны, 4 с перезарядки.', prerequisite: 'warrior1', maxRank: 1, bonuses: {}, unlocksAbility: 'whirlwind' },
-  { id: 'mage3', name: 'Ледяная волна · X', description: 'Сектор перед героем: 40 × сила магии и стан 0,8 с (босс: 0,2 с). 30 маны, 7 с перезарядки.', prerequisite: 'mage1', maxRank: 1, bonuses: {}, unlocksAbility: 'frostWave' },
-  { id: 'survivor3', name: 'Восстановление · C', description: 'Восстанавливает 35% максимального здоровья. 45 маны, 12 с перезарядки. При полном здоровье не расходуется.', prerequisite: 'survivor1', maxRank: 1, bonuses: {}, unlocksAbility: 'mend' },
+  { id: 'warrior3', name: 'Вихрь', description: 'Круговой удар: 150% урона оружия. 30 маны, 4 с перезарядки.', prerequisite: 'warrior1', maxRank: 1, bonuses: {}, unlocksAbility: 'whirlwind' },
+  { id: 'mage3', name: 'Ледяная волна', description: 'Сектор перед героем: 40 × сила магии и стан 0,8 с (босс: 0,2 с). 30 маны, 7 с перезарядки.', prerequisite: 'mage1', maxRank: 1, bonuses: {}, unlocksAbility: 'frostWave' },
+  { id: 'survivor3', name: 'Восстановление', description: 'Восстанавливает 35% максимального здоровья. 45 маны, 12 с перезарядки. При полном здоровье не расходуется.', prerequisite: 'survivor1', maxRank: 1, bonuses: {}, unlocksAbility: 'mend' },
 ];

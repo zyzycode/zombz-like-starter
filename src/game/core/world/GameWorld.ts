@@ -4,7 +4,7 @@ import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
 import { RestorationSystem } from '@/game/core/environment/RestorationSystem';
 import { HazardSystem } from '@/game/core/environment/HazardSystem';
 import { ProjectileSystem } from '@/game/core/combat/ProjectileSystem';
-import type { ActiveAbilityId, BuildResourcePolicy, Stats } from '@/game/core/progression/types';
+import type { AbilityLoadout, ActiveAbilityId, BuildResourcePolicy, Stats } from '@/game/core/progression/types';
 import { Player } from '@/game/core/characters/Player';
 import { ExtractionSystem } from '@/game/core/extraction/ExtractionSystem';
 import { ExtractionZone } from '@/game/core/extraction/ExtractionZone';
@@ -181,6 +181,7 @@ export class GameWorld {
   }
 
   setUnlockedAbilities(ids: readonly ActiveAbilityId[]) { this.player.setUnlockedAbilities(ids); }
+  setAbilityLoadout(loadout: AbilityLoadout) { this.player.setAbilityLoadout(loadout); }
 
   applyBuild(stats: Stats, resourcePolicy?: BuildResourcePolicy) { this.player.applyBuild(stats, resourcePolicy); }
 

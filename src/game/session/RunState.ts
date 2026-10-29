@@ -1,6 +1,6 @@
 import type { WorldState } from '@/game/core/world/WorldState';
 import type { RunBuild } from '@/game/core/progression/RunBuild';
-import type { Item, ItemSlot, SkillId } from '@/game/core/progression/types';
+import type { ActiveAbilityId, ActiveAbilitySlot, Item, ItemSlot, SkillId } from '@/game/core/progression/types';
 import type { MetaProgression } from '@/game/core/meta/MetaProgression';
 
 export type RunPhase = 'menu' | 'loading' | 'playing' | 'exploring' | 'paused' | 'reward' | 'won' | 'lost' | 'error';
@@ -31,6 +31,7 @@ export type RunActions = {
   equip(id: string): void;
   unequip(slot: ItemSlot): void;
   learn(id: SkillId): void;
+  assignAbility(slot: ActiveAbilitySlot, id: ActiveAbilityId | null): void;
   buyMetaUpgrade(id: 'vitality' | 'might' | 'wisdom'): void;
   togglePause(): void;
   returnToMenu(): void;

@@ -17,11 +17,11 @@ function Meter({ label, value, max, kind }: { label: string; value: number; max:
   </div>;
 }
 
-function Ability({ hotkey, name, cooldown, description, mana = Infinity, cost = 0, locked = false, fullHealth = false }: {
-  hotkey: string; name: string; cooldown: number; description?: string; mana?: number; cost?: number; locked?: boolean; fullHealth?: boolean;
+function Ability({ hotkey, name, cooldown, description, mana = Infinity, cost = 0, locked = false, fullHealth = false, empty = false }: {
+  hotkey: string; name: string; cooldown: number; description?: string; mana?: number; cost?: number; locked?: boolean; fullHealth?: boolean; empty?: boolean;
 }) {
-  const status = locked ? 'Не изучено' : cooldown > 0 ? `${(cooldown / 1000).toFixed(1)} с` : mana < cost ? 'Нет маны' : fullHealth ? 'HP полные' : cost > 0 ? `${cost} маны` : 'Готово';
-  return <div title={description} className={`ability ${cooldown > 0 ? 'cooling' : ''} ${locked ? 'locked' : ''}`}>
+  const status = empty ? 'Свободно' : locked ? 'Не изучено' : cooldown > 0 ? `${(cooldown / 1000).toFixed(1)} с` : mana < cost ? 'Нет маны' : fullHealth ? 'HP полные' : cost > 0 ? `${cost} маны` : 'Готово';
+  return <div title={description} className={`ability ${cooldown > 0 ? 'cooling' : ''} ${locked || empty ? 'locked' : ''}`}>
     <kbd>{hotkey}</kbd><span>{name}</span><small>{status}</small>
   </div>;
 }
@@ -46,6 +46,11 @@ export function Hud() {
     const duration = Math.round(baseMs * (1 + build.stats.stunDurationBonus));
     return `стан ${seconds(duration)} (босс: ${seconds(duration * .25)})`;
   };
+  const activeDescriptions = {
+    whirlwind: 'Изучи в ветке Воина · круговой удар',
+    frostWave: `Изучи в ветке Мага · ледяной сектор · ${stun(800)}`,
+    mend: 'Изучи в ветке Выживания · восстановление 35% здоровья',
+  };
   return <>
     <header className="sidebar-header"><span className="eyebrow">Пепельный путь <b>α</b></span><h2>{phase === 'menu' ? 'Странник' : snapshot.stage.biome}</h2><div className="section-caption muted small"><span>{phase === 'menu' ? 'Готов к новому пути' : `Уровень ${snapshot.depth} / ${snapshot.totalLevels}`}</span><span className="gold">✦ {snapshot.meta.shards}</span></div></header>
     <section className="vitals">
@@ -55,7 +60,7 @@ export function Hud() {
       <div className="combat-stats"><span>Урон <b>{Math.round(build.stats.damage)}</b></span><span>Броня <b>{Math.round(build.stats.armor)}</b></span><span>Магия <b>{Math.round(build.stats.spellPower * 100)}%</b></span></div>
       {(build.stats.cooldownReduction > 0 || build.stats.stunDurationBonus > 0) && <div className="combat-stats">
         {build.stats.cooldownReduction > 0 && <span title="Сокращает перезарядку новых применений Q/R/F/Z/X/C, максимум 40%. Рывок и уже запущенные таймеры не меняются.">Перезарядка <b>−{Math.round(build.stats.cooldownReduction * 1000) / 10}%</b></span>}
-        {build.stats.stunDurationBonus > 0 && <span title="Увеличивает длительность стана F и X, максимум 50%. Босс получает 25% итоговой длительности.">Стан <b>+{Math.round(build.stats.stunDurationBonus * 1000) / 10}%</b></span>}
+        {build.stats.stunDurationBonus > 0 && <span title="Увеличивает длительность стана «Удара щитом» и «Ледяной волны», максимум 50%. Босс получает 25% итоговой длительности.">Стан <b>+{Math.round(build.stats.stunDurationBonus * 1000) / 10}%</b></span>}
       </div>}
     </section>
     <section className="abilities" aria-label="Способности">
@@ -63,9 +68,12 @@ export function Hud() {
       <Ability hotkey="R" name="Кольцо" cooldown={abilities?.novaCooldownMs ?? 0} cost={40} mana={mana} description={`40 маны · перезарядка нового применения ${cooldown(4500)}`} />
       <Ability hotkey="F" name="Удар щитом" cooldown={abilities?.shieldBashCooldownMs ?? 0} cost={25} mana={mana} description={`25 маны · перезарядка нового применения ${cooldown(6000)} · ${stun(1400)}`} />
       <Ability hotkey="⇧" name="Рывок" cooldown={abilities?.dodgeCooldownMs ?? 0} />
-      <Ability hotkey="Z" name="Вихрь" cooldown={abilities?.whirlwindCooldownMs ?? 0} cost={ACTIVE_ABILITIES.whirlwind.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('whirlwind')} description={`Изучи в ветке Воина · круговой удар · перезарядка нового применения ${cooldown(ACTIVE_ABILITIES.whirlwind.cooldownMs)}`} />
-      <Ability hotkey="X" name="Ледяная волна" cooldown={abilities?.frostWaveCooldownMs ?? 0} cost={ACTIVE_ABILITIES.frostWave.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('frostWave')} description={`Изучи в ветке Мага · ледяной сектор · ${stun(800)} · перезарядка нового применения ${cooldown(ACTIVE_ABILITIES.frostWave.cooldownMs)}`} />
-      <Ability hotkey="C" name="Восстановление" cooldown={abilities?.mendCooldownMs ?? 0} cost={ACTIVE_ABILITIES.mend.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('mend')} fullHealth={!world || world.player.hp >= world.player.maxHp} description={`Изучи в ветке Выживания · восстановление 35% здоровья · перезарядка нового применения ${cooldown(ACTIVE_ABILITIES.mend.cooldownMs)}`} />
+      {(['z', 'x', 'c'] as const).map((slot) => {
+        const id = build.abilityLoadout[slot];
+        if (!id) return <Ability key={slot} hotkey={slot.toUpperCase()} name="Не назначено" cooldown={0} empty description="Назначь изученную способность во вкладке «Навыки» на паузе или после зачистки." />;
+        const ability = ACTIVE_ABILITIES[id];
+        return <Ability key={slot} hotkey={slot.toUpperCase()} name={ability.name} cooldown={abilities?.[ability.cooldownKey] ?? 0} cost={ability.manaCost} mana={mana} locked={!build.unlockedAbilities.includes(id)} fullHealth={id === 'mend' && (!world || world.player.hp >= world.player.maxHp)} description={`${activeDescriptions[id]} · перезарядка нового применения ${cooldown(ability.cooldownMs)}`} />;
+      })}
     </section>
     {world && <div className="wave-line"><span>Волна {world.wave.currentWaveIndex}/{world.wave.maxWaves}</span><span>{world.wave.activeEnemies > 0 ? `Врагов: ${world.wave.activeEnemies}` : world.wave.nextWaveInMs > 0 ? `Через ${(world.wave.nextWaveInMs / 1000).toFixed(1)}с` : 'Зачищено'}</span></div>}
     {eliteObjective && eliteObjective.total > 0 && <div className="elite-objective" title="Броня снижает физический урон; магия действует полностью. Стремительная элита быстрее движется, но не ускоряет замах.">

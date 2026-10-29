@@ -212,9 +212,9 @@ export type InputState = {
   fireboltPressed?: boolean;
   novaPressed?: boolean;
   shieldBashPressed?: boolean;
-  whirlwindPressed?: boolean;
-  frostWavePressed?: boolean;
-  mendPressed?: boolean;
+  slotZPressed?: boolean;
+  slotXPressed?: boolean;
+  slotCPressed?: boolean;
   dodgePressed?: boolean;
   aim: Vector2;
 };

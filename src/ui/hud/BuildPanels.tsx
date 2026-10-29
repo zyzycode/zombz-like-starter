@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { SKILLS } from '@/game/core/progression/skills';
+import { ACTIVE_ABILITIES, isActiveAbility } from '@/game/core/combat/activeAbilities';
 import { META_UPGRADES } from '@/game/core/meta/MetaProgression';
 import type { EquipmentPreview, Item, ItemSlot, Stats } from '@/game/core/progression/types';
 import type { RunActions, RunSnapshot } from '@/game/session/RunState';
@@ -119,6 +120,22 @@ export function SkillsPanel({ snapshot, actions }: PanelProps) {
     <div className="section-caption"><span>Очки навыков</span><b className="accent">{build.skillPoints}</b></div>
     <p className="muted small">В каждой ветке есть активный навык: сначала изучи её первый узел, затем открой способность за 1 очко.</p>
     {!canEdit && <p className="muted small">Пауза останавливает бой и позволяет распределить очки.</p>}
+    <fieldset className="ability-loadout" disabled={!actions || !canEdit}>
+      <legend>Активный набор</legend>
+      {(['z', 'x', 'c'] as const).map((slot) => {
+        const assigned = build.abilityLoadout[slot];
+        const locked = assigned !== null && !build.unlockedAbilities.includes(assigned);
+        return <label key={slot}><kbd>{slot.toUpperCase()}</kbd><select aria-label={`Навык на ${slot.toUpperCase()}`} value={assigned ?? ''} onChange={(event) => {
+          const value = event.target.value;
+          if (value === '' || isActiveAbility(value)) actions?.assignAbility(slot, value === '' ? null : value);
+        }}>
+          <option value="">Не назначено</option>
+          {locked && <option value={assigned} disabled>{ACTIVE_ABILITIES[assigned].name} · не изучено</option>}
+          {build.unlockedAbilities.map((id) => <option key={id} value={id}>{ACTIVE_ABILITIES[id].name}</option>)}
+        </select></label>;
+      })}
+      <p>Назначай изученные навыки на паузе или после зачистки. Повторный выбор навыка меняет слоты местами; перезарядка сохраняется.</p>
+    </fieldset>
     {branches.map((branch) => <section className="skill-branch" key={branch.prefix}>
       <h3><span>{branch.symbol}</span> {branch.name}</h3>
       {SKILLS.filter((skill) => skill.id.startsWith(branch.prefix)).map((skill) => {
@@ -156,6 +173,6 @@ export function MetaPanel({ snapshot, actions }: PanelProps) {
 }
 
 export function ControlsPanel() {
-  const rows = [['W A S D', 'Движение · 8 направлений'], ['Мышь', 'Направление атаки'], ['ЛКМ / Space', 'Атака · можно удерживать'], ['Q', 'Огненный болт'], ['R', 'Кольцо пламени'], ['F', 'Удар щитом · оглушение'], ['Z', 'Вихрь · после изучения'], ['X', 'Ледяная волна · после изучения'], ['C', 'Восстановление · после изучения'], ['Shift', 'Рывок и уклонение'], ['E', 'Обелиск / тайник / источник'], ['Esc', 'Пауза / продолжить']];
-  return <div className="panel-stack controls"><h3>Управление</h3>{rows.map(([key, label]) => <div key={key}><kbd>{key}</kbd><span>{label}</span></div>)}<p className="muted small">Удар направляй мышью: после начала замаха направление фиксируется. Рывок прерывает замах и помогает выйти из-под удара. Трать ману на скопления противников. Z, X и C открываются за очки в ветках навыков. F бьёт в секторе перед героем и прерывает замах врага: 25 маны, базовая перезарядка 6 с и стан 1,4 с. Бонус длительности усиливает стан F и X; на боссе он длится вчетверо меньше. Сокращение перезарядки действует на новые применения Q/R/F/Z/X/C, без рывка и уже запущенных таймеров. Направляй щит мышью.</p><p className="muted small">На части арен встречаются руны: жёлтый контур предупреждает об ударе. Выйди за круг или уклонись. Руны ранят и врагов — заманивай их в ловушку.</p><p className="muted small">Янтарные обелиски — обязательная цель арены. Подойди и нажми E: активированный обелиск станет зелёным. Награда откроется после всех волн и активаций. После боя можно спокойно дойти до оставшихся обелисков.</p><p className="muted small">Тайник даёт дополнительную вещь в рюкзак. После зачистки выбери «Осмотреть арену», чтобы найти пропущенное. Esc вернёт к наградам.</p><p className="muted small">Элиту выделяют кольцо и подпись. Бронированные получают меньше физического урона — используй магию. Стремительные быстрее двигаются, но их замах не ускоряется. За каждого элитного врага — дополнительный опыт.</p><p className="muted small">Временный билд сбрасывается после забега. Наследие хранится в этом браузере.</p></div>;
+  const rows = [['W A S D', 'Движение · 8 направлений'], ['Мышь', 'Направление атаки'], ['ЛКМ / Space', 'Атака · можно удерживать'], ['Q', 'Огненный болт'], ['R', 'Кольцо пламени'], ['F', 'Удар щитом · оглушение'], ['Z / X / C', 'Назначенные активные навыки'], ['Shift', 'Рывок и уклонение'], ['E', 'Обелиск / тайник / источник'], ['Esc', 'Пауза / продолжить']];
+  return <div className="panel-stack controls"><h3>Управление</h3>{rows.map(([key, label]) => <div key={key}><kbd>{key}</kbd><span>{label}</span></div>)}<p className="muted small">Удар направляй мышью: после начала замаха направление фиксируется. Рывок прерывает замах и помогает выйти из-под удара. Трать ману на скопления противников. Изучай активные навыки в ветках и назначай их на Z, X и C во вкладке «Навыки». F бьёт в секторе перед героем и прерывает замах врага: 25 маны, базовая перезарядка 6 с и стан 1,4 с. Бонус длительности усиливает «Удар щитом» и «Ледяную волну»; на боссе он длится вчетверо меньше. Сокращение перезарядки действует на новые применения Q/R/F/Z/X/C, без рывка и уже запущенных таймеров. Направляй щит мышью.</p><p className="muted small">На части арен встречаются руны: жёлтый контур предупреждает об ударе. Выйди за круг или уклонись. Руны ранят и врагов — заманивай их в ловушку.</p><p className="muted small">Янтарные обелиски — обязательная цель арены. Подойди и нажми E: активированный обелиск станет зелёным. Награда откроется после всех волн и активаций. После боя можно спокойно дойти до оставшихся обелисков.</p><p className="muted small">Тайник даёт дополнительную вещь в рюкзак. После зачистки выбери «Осмотреть арену», чтобы найти пропущенное. Esc вернёт к наградам.</p><p className="muted small">Элиту выделяют кольцо и подпись. Бронированные получают меньше физического урона — используй магию. Стремительные быстрее двигаются, но их замах не ускоряется. За каждого элитного врага — дополнительный опыт.</p><p className="muted small">Временный билд сбрасывается после забега. Наследие хранится в этом браузере.</p></div>;
 }
