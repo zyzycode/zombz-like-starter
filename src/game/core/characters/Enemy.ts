@@ -1,15 +1,20 @@
 import { Character, directionToVector } from '@/game/core/characters/Character';
+import { steerAroundCollision } from '@/game/core/enemies/steerAroundCollision';
+import type { CollisionSteeringMemory } from '@/game/core/enemies/steerAroundCollision';
 import type { AttackController } from '@/game/core/combat/AttackController';
 import type { EnemyArchetype } from '@/game/core/enemies/EnemyArchetype';
 import type { AttackPayload, EnemyState, PlayerState, Vector2 } from '@/shared/types/game';
 
 /** Базовый класс врага, совместимый с общей системой состояний и анимаций. */
 export class Enemy extends Character {
+  private readonly detourSide: number;
+  private readonly steering: CollisionSteeringMemory = { direction: { x: 0, y: 0 }, remainingMs: 0 };
   constructor(
     state: EnemyState,
     readonly archetype: EnemyArchetype,
   ) {
     super(state);
+    this.detourSide = [...state.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 2 ? 1 : -1;
   }
 
   update(params: {
@@ -53,10 +58,16 @@ export class Enemy extends Character {
     const approach = distanceToPlayer > (ranged?.preferredRange ?? params.attackDistance);
     const shouldMove = shouldChase && !attackUpdate.isAttacking && (retreat || approach);
     const sign = retreat ? -1 : 1;
-    const movementIntent = shouldMove && distanceToPlayer > 0
+    const directIntent = shouldMove && distanceToPlayer > 0
       ? { x: dx / distanceToPlayer * sign, y: dy / distanceToPlayer * sign }
       : { x: 0, y: 0 };
+    const movementIntent = steerAroundCollision({
+      position: this.position, intent: directIntent, radius: this.radius,
+      preferredSide: this.detourSide, resolvePosition: params.resolvePosition,
+      memory: this.steering, deltaMs: params.deltaMs,
+    });
     const isMoving = movementIntent.x !== 0 || movementIntent.y !== 0;
+    if (isMoving && !attackUpdate.isAttacking) this.faceTowards(movementIntent.x, movementIntent.y);
 
     this.move(movementIntent, params.deltaMs, attackUpdate.movementMultiplier, params.resolvePosition);
 

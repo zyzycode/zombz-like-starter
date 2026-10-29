@@ -27,7 +27,7 @@ export type MapPropDefinition = {
   radius: number;
   width: number;
   height: number;
-  visual?: { textureKey: string; frame: number; scale?: number; ground?: boolean };
+  visual?: { textureKey: string; frame: number; scale?: number; ground?: boolean; origin?: Vector2 };
 };
 
 export type CollisionShapeDefinition =
@@ -58,6 +58,16 @@ export type MapTilesetDefinition = {
   source: string;
   imageKey?: string;
   imagePath?: string;
+  frameWidth?: number;
+  frameHeight?: number;
+};
+
+export type GroundStampDefinition = {
+  textureKey: string;
+  frame: number;
+  position: Vector2;
+  origin?: Vector2;
+  scale?: number;
 };
 
 export type TileChunkDefinition = {
@@ -96,6 +106,7 @@ export type MapDefinition = {
   arena: MapRect;
   tilesets: MapTilesetDefinition[];
   tileLayers: TileLayerDefinition[];
+  groundStamps?: GroundStampDefinition[];
   markers: MapMarkerDefinition[];
   props: MapPropDefinition[];
   restorationSites?: RestorationSiteDefinition[];

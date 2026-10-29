@@ -50,6 +50,6 @@ export function Hud() {
       {tab === 'meta' && <MetaPanel snapshot={snapshot} actions={actions} />}
       {tab === 'controls' && <ControlsPanel />}
     </div>
-    <footer className="sidebar-footer">Одиночный забег · прогресс хранится локально</footer>
+    <footer className="sidebar-footer">Одиночный забег · прогресс хранится локально<br />Графика: <a href="https://flarerpg.org/" target="_blank" rel="noreferrer">Flare</a> · <a href="/assets/flare/README.md" target="_blank" rel="noreferrer">авторы и лицензия</a></footer>
   </>;
 }

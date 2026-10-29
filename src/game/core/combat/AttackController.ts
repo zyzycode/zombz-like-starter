@@ -3,8 +3,8 @@ import type {
   AttackOwner,
   AttackPhase,
   AttackPayload,
-  Direction,
 } from '@/shared/types/game';
+import { directionToVector } from '@/game/core/math/directions';
 
 export type AttackUpdateResult = {
   isAttacking: boolean;
@@ -60,6 +60,15 @@ export class AttackController {
     return !actor.attack.runtime.isActive && actor.attack.runtime.cooldownRemainingMs === 0;
   }
 
+  cancel(actor: AttackOwner) {
+    const runtime = actor.attack.runtime;
+    runtime.isActive = false;
+    runtime.elapsedMs = 0;
+    runtime.hasAppliedHit = false;
+    runtime.phase = 'idle';
+    // Cancelling a windup cannot refund its cooldown or create an immediate follow-up attack.
+  }
+
   private start(actor: AttackOwner) {
     const runtime = actor.attack.runtime;
     const config = actor.attack.config;
@@ -82,6 +91,7 @@ export class AttackController {
       damage: config.damage,
       range: config.range,
       radius: config.radius,
+      arcDegrees: config.arcDegrees,
       knockback: config.knockback,
       hitStopMs: config.hitStopMs,
       cameraShakeMs: config.cameraShakeMs,
@@ -114,18 +124,5 @@ export class AttackController {
       return 'recovery';
     }
     return 'idle';
-  }
-}
-
-function directionToVector(direction: Direction) {
-  switch (direction) {
-    case 'up':
-      return { x: 0, y: -1 };
-    case 'down':
-      return { x: 0, y: 1 };
-    case 'left':
-      return { x: -1, y: 0 };
-    case 'right':
-      return { x: 1, y: 0 };
   }
 }

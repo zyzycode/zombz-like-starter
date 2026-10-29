@@ -1,85 +1,45 @@
-import type { MapDefinition, MapPropDefinition } from '@/game/content/maps/types';
+import type { GroundStampDefinition, MapDefinition } from '@/game/content/maps/types';
 import type { CampaignStage } from '@/game/content/campaign/campaign';
 import { ARENA_LAYOUTS, onTrail } from '@/game/content/campaign/arenaLayouts';
 import { createArenaHazards } from '@/game/content/campaign/arenaHazards';
+import { createArenaScenery } from '@/game/content/campaign/arenaScenery';
+import { environmentAssets, type EnvironmentTheme } from '@/game/content/campaign/flareEnvironmentArt';
 
-const COLUMNS = 30, ROWS = 22, TILE = 32;
-const TOWN_GID = 1, DUNGEON_GID = 1001;
-
-/** Six authored arenas share a CC0 art family and open, readable combat lanes. */
+/** Authored combat routes use Flare's real diamond floors in the existing world XY plane. */
 export function createArenaMap(stage: CampaignStage, depth: number): MapDefinition {
   const layout = ARENA_LAYOUTS[stage.id];
   if (!layout) throw new Error(`Missing arena layout: ${stage.id}`);
-  const grove = stage.biomeId === 'grove', frost = stage.biomeId === 'frost';
-  const townKey = frost ? 'kenney-town-frost' : 'kenney-town';
-  const dungeonKey = frost ? 'kenney-dungeon-frost' : 'kenney-dungeon';
-  const mask = Array.from({ length: COLUMNS * ROWS }, (_, i) => onTrail(i % COLUMNS + .5, Math.floor(i / COLUMNS) + .5, layout));
-  const isPath = (x: number, y: number) => x < 0 || y < 0 || x >= COLUMNS || y >= ROWS || mask[y * COLUMNS + x];
-  const floor = mask.map((path, i) => {
-    const x = i % COLUMNS, y = Math.floor(i / COLUMNS);
-    const noise = (x * 17 + y * 31 + depth * 13) % 29;
-    if (!path) return TOWN_GID + (grove || frost ? noise < 3 ? 1 : 0 : 25);
-    if (!grove) {
-      // Full masonry tiles form continuous paving; object art belongs only in props.
-      const plaza = layout.clearings.some((area) => Math.hypot(x + .5 - area.x, y + .5 - area.y) < area.radius);
-      return DUNGEON_GID + (plaza ? 14 : 40);
-    }
-    const top = !isPath(x, y - 1), bottom = !isPath(x, y + 1);
-    const left = !isPath(x - 1, y), right = !isPath(x + 1, y);
-    const frame = top ? left ? 12 : right ? 14 : 13 : bottom ? left ? 36 : right ? 38 : 37 : left ? 24 : right ? 26 : 25;
-    return TOWN_GID + frame;
-  });
-  const props: MapPropDefinition[] = [];
-  const addProp = (id: string, x: number, y: number, kind: MapPropDefinition['kind'], key: string, frame: number, scale = 1, ground = false) => {
-    props.push({ id, kind, position: { x, y }, radius: 24, width: TILE * scale, height: TILE * scale,
-      visual: { textureKey: key, frame, scale, ground } });
-  };
-  for (const [i, center] of layout.islands.entries()) {
-    if (grove || frost) {
-      addProp(`cover-${i}`, center.x, center.y, 'tree', townKey, i % 2 ? 4 : 5, 2.5);
-      addProp(`sapling-${i}`, center.x + 34, center.y + 8, 'foliage', townKey, 28, 1.2, true);
-      addProp(`fern-${i}`, center.x - 30, center.y + 12, 'foliage', townKey, 17, 1, true);
-      addProp(`mushrooms-${i}`, center.x - 18, center.y - 30, 'foliage', townKey, 29, .8, true);
-    } else {
-      addProp(`cover-${i}`, center.x, center.y, 'ruin', dungeonKey, i % 2 ? 41 : 31, 2);
-      addProp(`rubble-${i}`, center.x + 32, center.y + 6, 'foliage', dungeonKey, 24, 1, true);
-      addProp(`urn-${i}`, center.x - 32, center.y + 8, 'foliage', dungeonKey, 74, 1.1, true);
+  const theme: EnvironmentTheme = stage.biomeId === 'grove' ? 'grassland' : stage.biomeId === 'frost' ? 'snowplains' : 'dungeon';
+  const scenery = createArenaScenery(stage, layout, theme);
+  const groundStamps: GroundStampDefinition[] = [];
+  // Offset rows tessellate 64x32 diamonds. A slight overlap prevents alpha seams.
+  for (let row = -1; row <= 45; row++) {
+    for (let column = -1; column <= 15; column++) {
+      const x = column * 64 + (row % 2 ? 32 : 0), y = row * 16;
+      const route = onTrail(x / 32, y / 32, layout);
+      const edge = route && [[1, 0], [-1, 0], [0, .5], [0, -.5]].some(([dx, dy]) => !onTrail(x / 32 + dx, y / 32 + dy, layout));
+      const noise = (column * 17 + row * 31 + depth * 13 + 1500) % 16;
+      const frame = theme === 'dungeon'
+        ? route ? [16, 17, 18, 19][noise % 4] : [0, 1, 2, 3, 20, 21, 22, 23][noise % 8]
+        : route ? edge ? 28 + noise % 4 : 16 + noise % 12 : noise;
+      groundStamps.push({ textureKey: `flare-${theme}-floor`, frame, position: { x, y }, scale: 1.025 });
     }
   }
-  // Edge planting and ruins frame the play space; they never form hidden collision walls.
-  for (let i = 0; i < 14; i++) {
-    const x = 32 + i * 68;
-    for (const [j, y] of [28, 700].entries()) {
-      addProp(`border-${i}-${j}`, x, y, grove || frost ? 'tree' : 'ruin', grove || frost ? townKey : dungeonKey,
-        grove || frost ? i % 3 ? 4 : 5 : i % 3 ? 64 : 31, grove || frost ? 1.6 : 1.25);
-    }
-  }
-  for (const [i, point] of [{ x: 48, y: 250 }, { x: 912, y: 440 }, { x: 48, y: 500 }, { x: 912, y: 200 }].entries()) {
-    addProp(`edge-${i}`, point.x, point.y, grove || frost ? 'tree' : 'ruin', grove || frost ? townKey : dungeonKey, grove || frost ? 5 : 65, 1.8);
-  }
-  const asset = (name: string, key: string, firstGid: number, frozen = false) => ({
-    id: key, name: key, firstGid, source: `tiny-${name}${frozen ? '-frost' : ''}-32.png`, imageKey: key,
-    imagePath: `/assets/kenney/tiny-${name}${frozen ? '-frost' : ''}-32.png`,
-  });
-  const tilesets = [asset('town', townKey, TOWN_GID, frost), asset('dungeon', dungeonKey, DUNGEON_GID, frost)];
-  if (frost) tilesets.push(asset('dungeon', 'kenney-dungeon', 2001));
   return {
-    id: stage.id, version: 2, width: COLUMNS * TILE, height: ROWS * TILE,
-    palette: { tint: 0xffffff, background: grove ? 0x386b39 : frost ? 0x768fa1 : 0x7a5c4b,
-      obstacle: 0x686b78, accent: grove ? 0xa0c87d : frost ? 0xb4edff : 0xe0bc80 },
-    originOffset: { x: 0, y: 0 }, renderMode: 'tiled', tileSize: { width: TILE, height: TILE },
-    arena: { x: TILE, y: TILE, width: 896, height: 640 }, tilesets,
-    tileLayers: [{ id: 'terrain', name: 'terrain', kind: 'tile', width: COLUMNS, height: ROWS, opacity: 1, visible: true,
-      chunks: [{ x: 0, y: 0, width: COLUMNS, height: ROWS, data: floor }] }],
+    id: stage.id, version: 3, width: 960, height: 704,
+    palette: { tint: 0xffffff, background: theme === 'grassland' ? 0x333529 : theme === 'snowplains' ? 0x899499 : 0x292723,
+      obstacle: 0x686b78, accent: theme === 'grassland' ? 0x8c9270 : theme === 'snowplains' ? 0xb4ced8 : 0xb3a17e },
+    originOffset: { x: 0, y: 0 }, renderMode: 'tiled', tileSize: { width: 32, height: 32 },
+    arena: { x: 32, y: 32, width: 896, height: 640 },
+    tilesets: environmentAssets(theme), tileLayers: [], groundStamps,
     markers: [
       { id: 'player', kind: 'player_spawn', position: { x: 480, y: 352 } },
-      ...[{ x: 100, y: 100 }, { x: 860, y: 100 }, { x: 860, y: 604 }, { x: 100, y: 604 }].map((position, i) => ({
-        id: `spawn-${i}`, kind: 'enemy_spawn' as const, position,
+      ...[{ x: 100, y: 100 }, { x: 860, y: 100 }, { x: 860, y: 604 }, { x: 100, y: 604 }].map((position, index) => ({
+        id: `spawn-${index}`, kind: 'enemy_spawn' as const, position,
       })),
     ],
-    props,
-    hazards: createArenaHazards(stage),
-    collision: layout.islands.map((position, i) => ({ id: `cover-${i}`, kind: 'circle', position: { ...position, y: position.y - 6 }, radius: 26 })),
+    props: scenery.props, hazards: createArenaHazards(stage),
+    collision: [...layout.islands.map((position, index) => ({ id: `cover-${index}`, kind: 'circle' as const, position: { ...position }, radius: 26 })), ...scenery.collision],
     restorationSites: [{ id: `${stage.id}-spring`, position: layout.restoration, radius: 64, healthFraction: .35, manaFraction: .6 }],
   };
 }

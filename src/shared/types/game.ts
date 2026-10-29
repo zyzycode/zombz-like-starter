@@ -6,7 +6,7 @@ export type Vector2 = {
 
 export type CharacterState = 'idle' | 'walk' | 'attack' | 'cast' | 'hurt' | 'death';
 
-export type Direction = 'up' | 'down' | 'left' | 'right';
+export type Direction = 'up' | 'up-right' | 'right' | 'down-right' | 'down' | 'down-left' | 'left' | 'up-left';
 
 export type AnimationName = `${CharacterState}_${Direction}`;
 
@@ -35,6 +35,8 @@ export type AttackConfig = {
   cooldownMs: number;
   moveSpeedMultiplier: number;
   radius: number;
+  /** Optional forward melee sweep; omitted attacks retain the original tip-circle geometry. */
+  arcDegrees?: number;
   knockback: number;
   hitStopMs: number;
   cameraShakeMs?: number;
@@ -63,6 +65,7 @@ export type AttackPayload = {
   damage: number;
   range: number;
   radius: number;
+  arcDegrees?: number;
   knockback: number;
   hitStopMs: number;
   cameraShakeMs?: number;

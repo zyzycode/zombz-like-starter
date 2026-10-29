@@ -1,8 +1,8 @@
 import type { Damageable } from '@/game/core/contracts/GameplayContracts';
+import { directionToVector } from '@/game/core/math/directions';
 import type {
   AttackModifier,
   AttackPayload,
-  Direction,
   Vector2,
 } from '@/shared/types/game';
 
@@ -31,10 +31,10 @@ export class CombatResolver {
         continue;
       }
 
-      const hitDistance = Math.hypot(target.position.x - hitX, target.position.y - hitY);
-      const hitRadius = target.radius + resolvedAttack.radius;
-
-      if (hitDistance > hitRadius) {
+      const intersects = resolvedAttack.arcDegrees === undefined
+        ? Math.hypot(target.position.x - hitX, target.position.y - hitY) <= target.radius + resolvedAttack.radius
+        : intersectsSector(resolvedAttack, target, attackDirection);
+      if (!intersects) {
         continue;
       }
 
@@ -70,17 +70,15 @@ export class CombatResolver {
   }
 }
 
-function directionToVector(direction: Direction) {
-  switch (direction) {
-    case 'up':
-      return { x: 0, y: -1 };
-    case 'down':
-      return { x: 0, y: 1 };
-    case 'left':
-      return { x: -1, y: 0 };
-    case 'right':
-      return { x: 1, y: 0 };
-  }
+function intersectsSector(attack: AttackPayload, target: Damageable, direction: Vector2) {
+  const dx = target.position.x - attack.origin.x, dy = target.position.y - attack.origin.y;
+  const distance = Math.hypot(dx, dy);
+  if (distance > attack.range + attack.radius + target.radius) return false;
+  if (distance <= target.radius) return true;
+  const angle = Math.acos(Math.max(-1, Math.min(1, (dx * direction.x + dy * direction.y) / distance)));
+  const targetMargin = Math.asin(Math.min(1, target.radius / distance));
+  const halfArc = Math.max(0, Math.min(360, attack.arcDegrees ?? 0)) * Math.PI / 360;
+  return angle <= halfArc + targetMargin;
 }
 
 function scaleVector(vector: Vector2, scalar: number) {

@@ -194,3 +194,5 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
   .field-hud { padding: 10px; }
   .field-hint { left: 10px; bottom: 10px; }
 }
+
+.sidebar-footer a { color: inherit; text-decoration-color: #6b8676; text-underline-offset: 2px; }

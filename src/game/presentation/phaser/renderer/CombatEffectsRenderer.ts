@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { WorldState } from '@/game/core/world/WorldState';
 import type { EnemyState, Vector2 } from '@/shared/types/game';
+import { drawAttackShape } from '@/game/presentation/phaser/renderer/drawAttackShape';
 
 /** Reuses two graphics buffers for telegraphs, missiles and short spell effects. */
 export class CombatEffectsRenderer {
@@ -66,19 +67,8 @@ export class CombatEffectsRenderer {
       this.ground.strokeCircle(enemy.position.x, enemy.position.y, 12 + progress * 8);
       return;
     }
-    const position = {
-      x: enemy.position.x + enemy.facing.x * config.range,
-      y: enemy.position.y + enemy.facing.y * config.range,
-    };
     const color = enemy.archetypeId === 'boss' ? 0xff4e84 : 0xff7957;
-    this.ground.fillStyle(color, 0.08 + progress * 0.16);
-    this.ground.fillCircle(position.x, position.y, config.radius);
-    this.ground.lineStyle(2, color, 0.75);
-    this.ground.strokeCircle(position.x, position.y, config.radius);
-    this.ground.lineStyle(3, color, 0.95);
-    this.ground.beginPath();
-    this.ground.arc(position.x, position.y, config.radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress);
-    this.ground.strokePath();
+    drawAttackShape(this.ground, enemy.position, runtime.direction, config, color, .08 + progress * .16, progress);
   }
 
   destroy() {

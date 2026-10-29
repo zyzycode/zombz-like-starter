@@ -28,6 +28,7 @@ export class BootScene extends Phaser.Scene {
         frameHeight: sheet.frameHeight,
       });
     }
+    this.load.spritesheet('flare-obelisk', '/assets/flare/characters/restoration.png', { frameWidth: 128, frameHeight: 128 });
 
     // Campaign has no destructibles; legacy optional textures are absent from this asset pack.
     // DestructibleView already supplies its own geometric fallback.
@@ -56,7 +57,7 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     for (const sheet of characterSheets.values()) {
-      if (this.textures.exists(sheet.key)) this.textures.get(sheet.key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+      if (this.textures.exists(sheet.key)) this.textures.get(sheet.key).setFilter(Phaser.Textures.FilterMode.LINEAR);
     }
     this.scene.start(this.game.registry.get('selectedLevelId') === 'campaign' ? 'campaign' : 'game');
   }

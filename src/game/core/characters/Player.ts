@@ -74,9 +74,11 @@ export class Player extends Character {
     const movement = { x: x / length, y: y / length };
     const isMoving = x !== 0 || y !== 0;
     if (input.dodgePressed && this.abilities.dodgeCooldownMs === 0) {
+      params.attackController.cancel(this);
       this.abilities.dodgeCooldownMs = 1400;
       this.abilities.dodgeRemainingMs = 180;
       this.dodgeDirection = isMoving ? movement : { ...this.facing };
+      if (isMoving) this.faceTowards(x, y);
       this.hurtTimerMs = 0;
       this.knockbackVelocity = { x: 0, y: 0 };
     }
@@ -89,7 +91,9 @@ export class Player extends Character {
     if (!this.attack.runtime.isActive) {
       const aimX = input.aim.x - this.position.x;
       const aimY = input.aim.y - this.position.y;
-      if (aimX || aimY) this.faceTowards(aimX, aimY);
+      const aiming = input.attackPressed || input.attackHeld || input.fireboltPressed || input.novaPressed;
+      if (isMoving && !aiming) this.faceTowards(x, y);
+      else if (aimX || aimY) this.faceTowards(aimX, aimY);
       else if (isMoving) this.faceTowards(x, y);
     }
     const attackUpdate = params.attackController.update(this, deltaMs, input.attackPressed || input.attackHeld);

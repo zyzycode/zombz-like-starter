@@ -1,0 +1,213 @@
+{
+  "revision": "af6eee6d339ac98011864bfe89da837fe7769c28",
+  "directions": [
+    "down-left",
+    "left",
+    "up-left",
+    "up",
+    "up-right",
+    "right",
+    "down-right",
+    "down"
+  ],
+  "characters": {
+    "hero": {
+      "cell": 128,
+      "origin": {
+        "x": 0.5,
+        "y": 0.6666666666666666
+      },
+      "states": {
+        "idle": {
+          "count": 4,
+          "fps": 5.0
+        },
+        "walk": {
+          "count": 8,
+          "fps": 15.01
+        },
+        "attack": {
+          "count": 4,
+          "fps": 10.0
+        },
+        "cast": {
+          "count": 4,
+          "fps": 10.0
+        },
+        "hurt": {
+          "count": 2,
+          "fps": 15.04
+        },
+        "death": {
+          "count": 6,
+          "fps": 7.5
+        }
+      }
+    },
+    "grunt": {
+      "cell": 128,
+      "origin": {
+        "x": 0.5,
+        "y": 0.6666666666666666
+      },
+      "states": {
+        "idle": {
+          "count": 4,
+          "fps": 7.5
+        },
+        "walk": {
+          "count": 8,
+          "fps": 15.01
+        },
+        "attack": {
+          "count": 4,
+          "fps": 10.0
+        },
+        "cast": {
+          "count": 4,
+          "fps": 10.0
+        },
+        "hurt": {
+          "count": 2,
+          "fps": 15.04
+        },
+        "death": {
+          "count": 6,
+          "fps": 7.5
+        }
+      }
+    },
+    "runner": {
+      "cell": 192,
+      "origin": {
+        "x": 0.5,
+        "y": 0.6666666666666666
+      },
+      "states": {
+        "idle": {
+          "count": 4,
+          "fps": 5.0
+        },
+        "walk": {
+          "count": 8,
+          "fps": 15.01
+        },
+        "attack": {
+          "count": 3,
+          "fps": 10.0
+        },
+        "cast": {
+          "count": 4,
+          "fps": 7.5
+        },
+        "hurt": {
+          "count": 2,
+          "fps": 15.04
+        },
+        "death": {
+          "count": 6,
+          "fps": 15.0
+        }
+      }
+    },
+    "ranged": {
+      "cell": 128,
+      "origin": {
+        "x": 0.5,
+        "y": 0.6666666666666666
+      },
+      "states": {
+        "idle": {
+          "count": 4,
+          "fps": 7.5
+        },
+        "walk": {
+          "count": 8,
+          "fps": 15.01
+        },
+        "attack": {
+          "count": 4,
+          "fps": 10.0
+        },
+        "cast": {
+          "count": 4,
+          "fps": 10.0
+        },
+        "hurt": {
+          "count": 2,
+          "fps": 15.04
+        },
+        "death": {
+          "count": 6,
+          "fps": 7.5
+        }
+      }
+    },
+    "brute": {
+      "cell": 192,
+      "origin": {
+        "x": 0.5,
+        "y": 0.75
+      },
+      "states": {
+        "idle": {
+          "count": 8,
+          "fps": 5.0
+        },
+        "walk": {
+          "count": 8,
+          "fps": 15.01
+        },
+        "attack": {
+          "count": 8,
+          "fps": 7.5
+        },
+        "cast": {
+          "count": 8,
+          "fps": 7.5
+        },
+        "hurt": {
+          "count": 3,
+          "fps": 15.0
+        },
+        "death": {
+          "count": 8,
+          "fps": 7.5
+        }
+      }
+    },
+    "boss": {
+      "cell": 256,
+      "origin": {
+        "x": 0.5,
+        "y": 0.75
+      },
+      "states": {
+        "idle": {
+          "count": 8,
+          "fps": 10.0
+        },
+        "walk": {
+          "count": 8,
+          "fps": 15.01
+        },
+        "attack": {
+          "count": 8,
+          "fps": 7.5
+        },
+        "cast": {
+          "count": 8,
+          "fps": 10.0
+        },
+        "hurt": {
+          "count": 8,
+          "fps": 15.01
+        },
+        "death": {
+          "count": 8,
+          "fps": 7.5
+        }
+      }
+    }
+  }
+}

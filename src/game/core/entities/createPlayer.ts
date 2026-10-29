@@ -25,6 +25,7 @@ export function createPlayer() {
         cooldownMs: 500,
         moveSpeedMultiplier: 0,
         radius: 14,
+        arcDegrees: 90,
         knockback: 260,
         hitStopMs: 55,
         cameraShakeMs: 70,

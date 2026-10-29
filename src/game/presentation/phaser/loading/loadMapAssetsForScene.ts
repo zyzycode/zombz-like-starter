@@ -16,8 +16,8 @@ export async function loadMapAssetsForScene(
   for (const tileset of map.tilesets) {
     if (!tileset.imageKey || !tileset.imagePath || scene.textures.exists(tileset.imageKey)) continue;
     scene.load.spritesheet(tileset.imageKey, tileset.imagePath, {
-      frameWidth: map.tileSize.width,
-      frameHeight: map.tileSize.height,
+      frameWidth: tileset.frameWidth ?? map.tileSize.width,
+      frameHeight: tileset.frameHeight ?? map.tileSize.height,
     });
     needsLoad = true;
   }

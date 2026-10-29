@@ -16,9 +16,9 @@ function enemy(id: string, hp: number, speed: number, radius: number, attack: Pa
 }
 
 export const enemyArchetypes = {
-  grunt: enemy('grunt', 100, 110, 18, {}, { kind: 'melee_chase', aggroRange: 3000, attackRangeBuffer: 0 }),
+  grunt: enemy('grunt', 100, 110, 18, { arcDegrees: 90 }, { kind: 'melee_chase', aggroRange: 3000, attackRangeBuffer: 0 }),
   runner: enemy('runner', 65, 180, 16,
-    { damage: 8, range: 30, windupMs: 250, recoveryMs: 150, cooldownMs: 800 },
+    { damage: 8, range: 30, arcDegrees: 90, windupMs: 250, recoveryMs: 150, cooldownMs: 800 },
     { kind: 'runner', aggroRange: 3000, attackRangeBuffer: 0 }),
   brute: enemy('brute', 250, 75, 25,
     { damage: 24, range: 0, radius: 95, windupMs: 850, recoveryMs: 450, cooldownMs: 1800, knockback: 180, hitStopMs: 60, cameraShakeMs: 120, cameraShakeIntensity: 0.004 },

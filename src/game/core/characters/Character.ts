@@ -1,4 +1,5 @@
 import { buildAnimationName } from '@/game/animation/animationNames';
+import { directionToVector, vectorToDirection } from '@/game/core/math/directions';
 import type { ActiveAttackRuntime, AttackSource, Damageable } from '@/game/core/contracts/GameplayContracts';
 import type { AnimationName } from '@/shared/types/game';
 import type {
@@ -75,8 +76,7 @@ export abstract class Character implements AttackOwner, Damageable, AttackSource
   }
 
   protected faceTowards(x: number, y: number) {
-    const cardinalDirection = toCardinalDirection(x, y);
-    const direction = vectorToDirection(cardinalDirection.x, cardinalDirection.y);
+    const direction = vectorToDirection(x, y);
     if (!direction) {
       return;
     }
@@ -174,44 +174,4 @@ export abstract class Character implements AttackOwner, Damageable, AttackSource
   }
 }
 
-export function toCardinalDirection(x: number, y: number) {
-  if (x === 0 && y === 0) {
-    return { x: 0, y: 0 };
-  }
-
-  if (Math.abs(x) >= Math.abs(y)) {
-    return { x: Math.sign(x), y: 0 };
-  }
-
-  return { x: 0, y: Math.sign(y) };
-}
-
-export function vectorToDirection(x: number, y: number): Direction | null {
-  if (x === 0 && y === 0) {
-    return null;
-  }
-
-  if (x > 0) {
-    return 'right';
-  }
-  if (x < 0) {
-    return 'left';
-  }
-  if (y > 0) {
-    return 'down';
-  }
-  return 'up';
-}
-
-export function directionToVector(direction: Direction) {
-  switch (direction) {
-    case 'up':
-      return { x: 0, y: -1 };
-    case 'down':
-      return { x: 0, y: 1 };
-    case 'left':
-      return { x: -1, y: 0 };
-    case 'right':
-      return { x: 1, y: 0 };
-  }
-}
+export { directionToVector, vectorToDirection } from '@/game/core/math/directions';
