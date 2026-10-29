@@ -11,7 +11,8 @@ export type Stats = {
 export const ITEM_SLOTS = ['weapon', 'armor', 'charm', 'helmet', 'boots'] as const;
 export type ItemSlot = typeof ITEM_SLOTS[number];
 export type Rarity = 'common' | 'rare' | 'epic';
-export type SkillId = 'warrior1' | 'warrior2' | 'mage1' | 'mage2' | 'survivor1' | 'survivor2';
+export type ActiveAbilityId = 'whirlwind' | 'frostWave' | 'mend';
+export type SkillId = 'warrior1' | 'warrior2' | 'warrior3' | 'mage1' | 'mage2' | 'mage3' | 'survivor1' | 'survivor2' | 'survivor3';
 export type MetaUpgradeId = 'vitality' | 'might' | 'wisdom';
 export type MetaRanks = Record<MetaUpgradeId, number>;
 export type ItemDefinition = {
@@ -43,6 +44,7 @@ export type BuildState = {
   xpToNext: number;
   skillPoints: number;
   skills: Record<SkillId, number>;
+  unlockedAbilities: ActiveAbilityId[];
   inventory: Item[];
   equipment: Partial<Record<ItemSlot, string>>;
   equipmentPreviews: EquipmentPreviews;

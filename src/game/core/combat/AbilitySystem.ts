@@ -10,6 +10,24 @@ export class AbilitySystem {
 
   update(params: { player: Player; input: InputState; enemies: Enemy[]; projectiles: ProjectileSystem }) {
     const { player, input, projectiles } = params;
+    if (input.whirlwindPressed && player.cast('whirlwind')) {
+      this.resolver.resolveAttack({
+        sourceId: player.id, team: player.team, type: 'melee', damageType: 'physical',
+        damage: player.attack.config.damage * 1.5, range: 0, radius: 125,
+        direction: player.direction, origin: { ...player.position }, knockback: 0, hitStopMs: 0,
+      }, params.enemies);
+    }
+    if (input.frostWavePressed && player.cast('frostWave')) {
+      const direction = vectorToDirection(input.aim.x - player.position.x, input.aim.y - player.position.y) ?? player.direction;
+      player.setFrostWaveDirection(direction);
+      this.resolver.resolveAttack({
+        sourceId: player.id, team: player.team, type: 'melee', damageType: 'magic',
+        damage: 40 * player.spellPower, range: 0, radius: 200, arcDegrees: 90,
+        direction, origin: { ...player.position }, knockback: 0, hitStopMs: 0,
+        statusEffects: [{ kind: 'stun', durationMs: 800 }],
+      }, params.enemies);
+    }
+    if (input.mendPressed && player.cast('mend')) player.restoreResources(0.35, 0);
     if (input.shieldBashPressed && player.cast('shieldBash')) {
       const direction = vectorToDirection(input.aim.x - player.position.x, input.aim.y - player.position.y) ?? player.direction;
       player.setShieldBashDirection(direction);

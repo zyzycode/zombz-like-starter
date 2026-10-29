@@ -110,10 +110,11 @@ export function InventoryPanel({ snapshot, actions }: PanelProps) {
 
 export function SkillsPanel({ snapshot, actions }: PanelProps) {
   const { build, phase } = snapshot;
-  const canEdit = ['menu', 'reward', 'paused'].includes(phase);
+  const canEdit = phase === 'reward' || phase === 'paused';
   const branches = [{ prefix: 'warrior', name: 'Воин', symbol: 'Ⅰ' }, { prefix: 'mage', name: 'Маг', symbol: 'Ⅱ' }, { prefix: 'survivor', name: 'Выживание', symbol: 'Ⅲ' }];
   return <div className="panel-stack">
     <div className="section-caption"><span>Очки навыков</span><b className="accent">{build.skillPoints}</b></div>
+    <p className="muted small">В каждой ветке есть активный навык: сначала изучи её первый узел, затем открой способность за 1 очко.</p>
     {!canEdit && <p className="muted small">Пауза останавливает бой и позволяет распределить очки.</p>}
     {branches.map((branch) => <section className="skill-branch" key={branch.prefix}>
       <h3><span>{branch.symbol}</span> {branch.name}</h3>
@@ -152,6 +153,6 @@ export function MetaPanel({ snapshot, actions }: PanelProps) {
 }
 
 export function ControlsPanel() {
-  const rows = [['W A S D', 'Движение · 8 направлений'], ['Мышь', 'Направление атаки'], ['ЛКМ / Space', 'Атака · можно удерживать'], ['Q', 'Огненный болт'], ['R', 'Кольцо пламени'], ['F', 'Удар щитом · оглушение'], ['Shift', 'Рывок и уклонение'], ['E', 'Использовать источник рядом'], ['Esc', 'Пауза / продолжить']];
-  return <div className="panel-stack controls"><h3>Управление</h3>{rows.map(([key, label]) => <div key={key}><kbd>{key}</kbd><span>{label}</span></div>)}<p className="muted small">Удар направляй мышью: после начала замаха направление фиксируется. Рывок прерывает замах и помогает выйти из-под удара. Трать ману на скопления противников. F бьёт в секторе перед героем и прерывает замах врага: 25 маны, перезарядка 6 с, стан 1,4 с (босс: 0,35 с). Направляй щит мышью.</p><p className="muted small">Со второго уровня встречаются руны: жёлтый контур предупреждает об ударе. Выйди за круг или уклонись. Руны ранят и врагов — заманивай их в ловушку.</p><p className="muted small">Временный билд сбрасывается после забега. Наследие хранится в этом браузере.</p></div>;
+  const rows = [['W A S D', 'Движение · 8 направлений'], ['Мышь', 'Направление атаки'], ['ЛКМ / Space', 'Атака · можно удерживать'], ['Q', 'Огненный болт'], ['R', 'Кольцо пламени'], ['F', 'Удар щитом · оглушение'], ['Z', 'Вихрь · после изучения'], ['X', 'Ледяная волна · после изучения'], ['C', 'Восстановление · после изучения'], ['Shift', 'Рывок и уклонение'], ['E', 'Использовать источник рядом'], ['Esc', 'Пауза / продолжить']];
+  return <div className="panel-stack controls"><h3>Управление</h3>{rows.map(([key, label]) => <div key={key}><kbd>{key}</kbd><span>{label}</span></div>)}<p className="muted small">Удар направляй мышью: после начала замаха направление фиксируется. Рывок прерывает замах и помогает выйти из-под удара. Трать ману на скопления противников. Z, X и C открываются за очки в ветках навыков. F бьёт в секторе перед героем и прерывает замах врага: 25 маны, перезарядка 6 с, стан 1,4 с (босс: 0,35 с). Направляй щит мышью.</p><p className="muted small">Со второго уровня встречаются руны: жёлтый контур предупреждает об ударе. Выйди за круг или уклонись. Руны ранят и врагов — заманивай их в ловушку.</p><p className="muted small">Временный билд сбрасывается после забега. Наследие хранится в этом браузере.</p></div>;
 }

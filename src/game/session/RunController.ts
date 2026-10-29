@@ -65,7 +65,7 @@ export class RunController {
       const step = Math.min(16, remaining);
       this.world.update(step, stepInput);
       remaining -= step;
-      stepInput = { ...input, attackPressed: false, interactPressed: false, fireboltPressed: false, novaPressed: false, shieldBashPressed: false, dodgePressed: false };
+      stepInput = { ...input, attackPressed: false, interactPressed: false, fireboltPressed: false, novaPressed: false, shieldBashPressed: false, whirlwindPressed: false, frostWavePressed: false, mendPressed: false, dodgePressed: false };
       const state = this.world.getState();
       const kills = state.runSession.killedEnemies;
       if (kills > this.lastKills) {
@@ -106,7 +106,9 @@ export class RunController {
 
   learn(id: SkillId) {
     if (!this.canEditBuild() || !this.build.learn(id)) return;
-    this.world?.applyBuild(this.build.getState().stats);
+    const build = this.build.getState();
+    this.world?.applyBuild(build.stats);
+    this.world?.setUnlockedAbilities(build.unlockedAbilities);
   }
 
   buyMetaUpgrade(id: MetaUpgradeId) {
@@ -152,7 +154,9 @@ export class RunController {
       const builtLevel = await this.buildLevel(this.depth, this.session, player);
       if (generation !== this.generation) return;
       const world = new GameWorld({ builtLevel, runSession: this.session, mode: 'campaign', runResultGateway: { submitRunResult: async () => {} } });
-      world.applyBuild(this.build.getState().stats);
+      const build = this.build.getState();
+      world.applyBuild(build.stats);
+      world.setUnlockedAbilities(build.unlockedAbilities);
       this.builtLevel = builtLevel;
       this.world = world;
       this.phase = 'playing';

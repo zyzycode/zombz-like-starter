@@ -12,7 +12,7 @@ export class RunBuild {
   private level = 1;
   private xp = 0;
   private skillPoints = 0;
-  private skills: Record<SkillId, number> = { warrior1: 0, warrior2: 0, mage1: 0, mage2: 0, survivor1: 0, survivor2: 0 };
+  private skills: Record<SkillId, number> = { warrior1: 0, warrior2: 0, warrior3: 0, mage1: 0, mage2: 0, mage3: 0, survivor1: 0, survivor2: 0, survivor3: 0 };
   private inventory: Item[] = [];
   private equipment: Partial<Record<ItemSlot, string>> = {};
   private rewards: Item[] = [];
@@ -31,6 +31,7 @@ export class RunBuild {
     const stats = this.calculateStats();
     return structuredClone({
       level: this.level, xp: this.xp, xpToNext: this.xpToNext(), skillPoints: this.skillPoints,
+      unlockedAbilities: SKILLS.flatMap((skill) => skill.unlocksAbility && this.skills[skill.id] > 0 ? [skill.unlocksAbility] : []),
       skills: this.skills, inventory: this.inventory, equipment: this.equipment, stats, equipmentPreviews: this.createEquipmentPreviews(stats),
     });
   }

@@ -133,6 +133,13 @@ export type AbilityState = {
   dodgeCooldownMs: number;
   dodgeRemainingMs: number;
   novaPulse: number;
+  whirlwindCooldownMs: number;
+  whirlwindPulse: number;
+  frostWaveCooldownMs: number;
+  frostWavePulse: number;
+  frostWaveDirection: Direction;
+  mendCooldownMs: number;
+  mendPulse: number;
   shieldBashCooldownMs: number;
   shieldBashPulse: number;
   shieldBashDirection: Direction;
@@ -204,6 +211,9 @@ export type InputState = {
   fireboltPressed?: boolean;
   novaPressed?: boolean;
   shieldBashPressed?: boolean;
+  whirlwindPressed?: boolean;
+  frostWavePressed?: boolean;
+  mendPressed?: boolean;
   dodgePressed?: boolean;
   aim: Vector2;
 };

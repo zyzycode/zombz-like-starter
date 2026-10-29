@@ -3,6 +3,9 @@ import type { WorldState } from '@/game/core/world/WorldState';
 import type { Direction, EnemyState, Vector2 } from '@/shared/types/game';
 import { drawAttackShape } from '@/game/presentation/phaser/renderer/drawAttackShape';
 
+type LearnedEffect = { pulse: number | null; remainingMs: number; position: Vector2; direction: Direction };
+const newEffect = (): LearnedEffect => ({ pulse: null, remainingMs: 0, position: { x: 0, y: 0 }, direction: 'down' });
+
 /** Reuses two graphics buffers for telegraphs, missiles and short spell effects. */
 export class CombatEffectsRenderer {
   private readonly ground: Phaser.GameObjects.Graphics;
@@ -13,6 +16,7 @@ export class CombatEffectsRenderer {
   private shieldBashRemainingMs = 0;
   private shieldBashPosition: Vector2 = { x: 0, y: 0 };
   private shieldBashDirection: Direction = 'down';
+  private readonly learnedEffects = { whirlwind: newEffect(), frostWave: newEffect(), mend: newEffect() };
   private novaPosition: Vector2 = { x: 0, y: 0 };
 
   constructor(scene: Phaser.Scene) {
@@ -64,9 +68,44 @@ export class CombatEffectsRenderer {
       drawAttackShape(this.ground, this.shieldBashPosition, this.shieldBashDirection,
         { range: 0, radius: 110, arcDegrees: 120 }, 0xffd98a, .3 * this.shieldBashRemainingMs / 240);
     }
+    this.drawLearnedEffects(state, deltaMs);
     if ((state.player.abilities?.dodgeRemainingMs ?? 0) > 0) {
       this.ground.lineStyle(2, 0x9cfff4, 0.8);
       this.ground.strokeCircle(state.player.position.x, state.player.position.y, state.player.radius + 5);
+    }
+  }
+
+  private drawLearnedEffects(state: WorldState, deltaMs: number) {
+    const abilities = state.player.abilities;
+    for (const name of ['whirlwind', 'frostWave', 'mend'] as const) {
+      const effect = this.learnedEffects[name];
+      const pulse = abilities?.[`${name}Pulse`] ?? 0;
+      const duration = name === 'mend' ? 600 : 360;
+      if (effect.pulse !== null && pulse !== effect.pulse) {
+        effect.position = { ...state.player.position };
+        effect.direction = abilities?.frostWaveDirection ?? state.player.direction;
+        effect.remainingMs = duration;
+      }
+      effect.pulse = pulse;
+      if (effect.remainingMs <= 0) continue;
+      effect.remainingMs = Math.max(0, effect.remainingMs - deltaMs);
+      const opacity = effect.remainingMs / duration;
+      const progress = 1 - opacity;
+      const { x, y } = effect.position;
+      if (name === 'whirlwind') {
+        this.ground.fillStyle(0xffdca0, .12 * opacity).fillCircle(x, y, 125);
+        this.air.lineStyle(4, 0xffdca0, opacity).beginPath();
+        this.air.arc(x, y, 125, progress * Math.PI * 4, progress * Math.PI * 4 + Math.PI * 1.5);
+        this.air.strokePath();
+      } else if (name === 'frostWave') {
+        drawAttackShape(this.ground, effect.position, effect.direction,
+          { range: 0, radius: 200, arcDegrees: 90 }, 0x9defff, .25 * opacity, progress);
+      } else {
+        this.ground.lineStyle(3, 0x9ff1b7, opacity).strokeCircle(x, y, 20 + progress * 35);
+        this.air.lineStyle(3, 0x9ff1b7, opacity);
+        this.air.lineBetween(x - 6, y - 45 - progress * 15, x + 6, y - 45 - progress * 15);
+        this.air.lineBetween(x, y - 51 - progress * 15, x, y - 39 - progress * 15);
+      }
     }
   }
 

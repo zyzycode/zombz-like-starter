@@ -44,9 +44,13 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
 .experience i { background: #c8b477; }
 .combat-stats { display: flex; justify-content: space-between; gap: 6px; font-size: 10px; color: var(--muted); }
 .combat-stats b { color: #e3e9e5; font-weight: 500; margin-left: 2px; }
-.abilities { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; padding: 0 20px 14px; }
-.ability { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 4px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff03; }
-.ability span { font-size: 11px; }
+.abilities { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 0 20px 12px; }
+.ability { display: grid; grid-template-columns: 19px minmax(0, 1fr); align-items: center; column-gap: 6px; row-gap: 2px; padding: 5px; border: 1px solid var(--line); border-radius: 5px; background: #ffffff03; }
+.ability kbd { grid-row: span 2; text-align: center; padding: 2px; }
+.ability small { grid-column: 2; }
+.ability.locked { background: transparent; border-style: dashed; }
+.ability.locked small { color: #b7c4bb; }
+.ability span { font-size: 10px; line-height: 1.25; overflow-wrap: anywhere; }
 .ability small { font-size: 10px; color: var(--accent); }
 .ability.cooling { background: #0003; }
 .ability.cooling small { color: var(--gold); }

@@ -12,6 +12,9 @@ type MovementKeys = {
   Q: Phaser.Input.Keyboard.Key;
   R: Phaser.Input.Keyboard.Key;
   F: Phaser.Input.Keyboard.Key;
+  Z: Phaser.Input.Keyboard.Key;
+  X: Phaser.Input.Keyboard.Key;
+  C: Phaser.Input.Keyboard.Key;
   SHIFT: Phaser.Input.Keyboard.Key;
 };
 
@@ -21,10 +24,10 @@ export class KeyboardController {
   private pointerWorld = { x: 0, y: 0 };
   private wasAttackDown = false;
   private wasInteractDown = false;
-  private previousAbilities = { Q: false, R: false, F: false, SHIFT: false };
+  private previousAbilities = { Q: false, R: false, F: false, Z: false, X: false, C: false, SHIFT: false };
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.keys = this.scene.input.keyboard!.addKeys('W,A,S,D,SPACE,E,Q,R,F,SHIFT') as MovementKeys;
+    this.keys = this.scene.input.keyboard!.addKeys('W,A,S,D,SPACE,E,Q,R,F,Z,X,C,SHIFT') as MovementKeys;
 
     this.scene.input.on('pointermove', this.updatePointer);
     this.scene.input.on('pointerdown', this.updatePointer);
@@ -55,8 +58,11 @@ export class KeyboardController {
     const fireboltPressed = this.keys.Q.isDown && !this.previousAbilities.Q;
     const novaPressed = this.keys.R.isDown && !this.previousAbilities.R;
     const shieldBashPressed = this.keys.F.isDown && !this.previousAbilities.F;
+    const whirlwindPressed = this.keys.Z.isDown && !this.previousAbilities.Z;
+    const frostWavePressed = this.keys.X.isDown && !this.previousAbilities.X;
+    const mendPressed = this.keys.C.isDown && !this.previousAbilities.C;
     const dodgePressed = this.keys.SHIFT.isDown && !this.previousAbilities.SHIFT;
-    this.previousAbilities = { Q: this.keys.Q.isDown, R: this.keys.R.isDown, F: this.keys.F.isDown, SHIFT: this.keys.SHIFT.isDown };
+    this.previousAbilities = { Q: this.keys.Q.isDown, R: this.keys.R.isDown, F: this.keys.F.isDown, Z: this.keys.Z.isDown, X: this.keys.X.isDown, C: this.keys.C.isDown, SHIFT: this.keys.SHIFT.isDown };
 
     // Объединяем клавиатуру и мышь в один объект, независимый от Phaser API.
     return {
@@ -70,6 +76,9 @@ export class KeyboardController {
       fireboltPressed,
       novaPressed,
       shieldBashPressed,
+      whirlwindPressed,
+      frostWavePressed,
+      mendPressed,
       dodgePressed,
       aim: this.pointerWorld,
     };

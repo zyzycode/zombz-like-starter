@@ -1,17 +1,20 @@
+import { ACTIVE_ABILITIES, ACTIVE_ABILITY_IDS, isActiveAbility } from '@/game/core/combat/activeAbilities';
 import { Character } from '@/game/core/characters/Character';
 import type { AttackController } from '@/game/core/combat/AttackController';
-import type { BuildResourcePolicy, Stats } from '@/game/core/progression/types';
+import type { ActiveAbilityId, BuildResourcePolicy, Stats } from '@/game/core/progression/types';
 import type { StatusEffect, AbilityState, AttackPayload, DamageType, InputState, PlayerState, Vector2 } from '@/shared/types/game';
 
 const SPELLS = {
-  firebolt: { cooldownKey: 'fireboltCooldownMs', cost: 20, cooldownMs: 550 },
-  nova: { cooldownKey: 'novaCooldownMs', cost: 40, cooldownMs: 4500 },
-  shieldBash: { cooldownKey: 'shieldBashCooldownMs', cost: 25, cooldownMs: 6000 },
+  firebolt: { cooldownKey: 'fireboltCooldownMs', manaCost: 20, cooldownMs: 550 },
+  nova: { cooldownKey: 'novaCooldownMs', manaCost: 40, cooldownMs: 4500 },
+  shieldBash: { cooldownKey: 'shieldBashCooldownMs', manaCost: 25, cooldownMs: 6000 },
+  ...ACTIVE_ABILITIES,
 } as const;
 
 /** Character simulation owns movement, damage defence and ability resources. */
 export class Player extends Character {
   private abilities: AbilityState;
+  private unlockedAbilities = new Set<ActiveAbilityId>();
   private manaRegen = 10;
   private armor = 0;
   spellPower = 1;
@@ -20,6 +23,9 @@ export class Player extends Character {
   constructor(state: PlayerState) {
     super(state);
     this.abilities = state.abilities ? { ...state.abilities } : {
+      whirlwindCooldownMs: 0, whirlwindPulse: 0,
+      frostWaveCooldownMs: 0, frostWavePulse: 0, frostWaveDirection: state.direction,
+      mendCooldownMs: 0, mendPulse: 0,
       mana: 100, maxMana: 100, fireboltCooldownMs: 0, novaCooldownMs: 0,
       shieldBashCooldownMs: 0, shieldBashPulse: 0, shieldBashDirection: state.direction,
       dodgeCooldownMs: 0, dodgeRemainingMs: 0, novaPulse: 0,
@@ -42,6 +48,8 @@ export class Player extends Character {
     this.spellPower = stats.spellPower;
   }
 
+  setUnlockedAbilities(ids: readonly ActiveAbilityId[]) { this.unlockedAbilities = new Set(ids); }
+
   getAbilities(): AbilityState { return { ...this.abilities }; }
 
   restoreResources(healthFraction: number, manaFraction: number): boolean {
@@ -56,10 +64,13 @@ export class Player extends Character {
 
   cast(spell: keyof typeof SPELLS): boolean {
     if (!this.isAlive || this.stunRemainingMs > 0 || this.abilities.dodgeRemainingMs > 0) return false;
-    const { cooldownKey: key, cost, cooldownMs } = SPELLS[spell];
+    if (isActiveAbility(spell) && !this.unlockedAbilities.has(spell)) return false;
+    if (spell === 'mend' && this.hp >= this.maxHp) return false;
+    const { cooldownKey: key, manaCost: cost, cooldownMs } = SPELLS[spell];
     if (this.abilities[key] > 0 || this.abilities.mana < cost) return false;
     this.abilities.mana -= cost;
     this.abilities[key] = cooldownMs;
+    if (isActiveAbility(spell)) this.abilities[ACTIVE_ABILITIES[spell].pulseKey] += 1;
     if (spell === 'shieldBash') this.abilities.shieldBashPulse += 1;
     if (spell === 'nova') this.abilities.novaPulse += 1;
     return true;
@@ -102,7 +113,7 @@ export class Player extends Character {
     if (!this.attack.runtime.isActive) {
       const aimX = input.aim.x - this.position.x;
       const aimY = input.aim.y - this.position.y;
-      const aiming = input.attackPressed || input.attackHeld || input.fireboltPressed || input.novaPressed || input.shieldBashPressed;
+      const aiming = input.attackPressed || input.attackHeld || input.fireboltPressed || input.novaPressed || input.shieldBashPressed || input.whirlwindPressed || input.frostWavePressed;
       if (isMoving && !aiming) this.faceTowards(x, y);
       else if (aimX || aimY) this.faceTowards(aimX, aimY);
       else if (isMoving) this.faceTowards(x, y);
@@ -112,6 +123,8 @@ export class Player extends Character {
     if (attackUpdate.hit) params.onHit(attackUpdate.hit);
     this.state = attackUpdate.isAttacking ? 'attack' : isMoving ? 'walk' : 'idle';
   }
+
+  setFrostWaveDirection(direction: PlayerState['direction']) { this.abilities.frostWaveDirection = direction; }
 
   setShieldBashDirection(direction: PlayerState['direction']) { this.abilities.shieldBashDirection = direction; }
 
@@ -141,6 +154,10 @@ export class Player extends Character {
 
   private tickAbilities(deltaMs: number) {
     this.abilities.mana = Math.min(this.abilities.maxMana, this.abilities.mana + this.manaRegen * deltaMs / 1000);
+    for (const id of ACTIVE_ABILITY_IDS) {
+      const key = ACTIVE_ABILITIES[id].cooldownKey;
+      this.abilities[key] = Math.max(0, this.abilities[key] - deltaMs);
+    }
     for (const key of ['shieldBashCooldownMs', 'fireboltCooldownMs', 'novaCooldownMs', 'dodgeCooldownMs', 'dodgeRemainingMs'] as const) {
       this.abilities[key] = Math.max(0, this.abilities[key] - deltaMs);
     }
