@@ -19,8 +19,9 @@ export function createArenaMap(stage: CampaignStage, depth: number): MapDefiniti
     const noise = (x * 17 + y * 31 + depth * 13) % 29;
     if (!path) return TOWN_GID + (grove || frost ? noise < 3 ? 1 : 0 : 25);
     if (!grove) {
-      // Flagstone plazas sit within snow or sandy rubble, with occasional intact paving.
-      return DUNGEON_GID + (noise === 0 ? 43 : noise < 3 ? 50 : 49);
+      // Full masonry tiles form continuous paving; object art belongs only in props.
+      const plaza = layout.clearings.some((area) => Math.hypot(x + .5 - area.x, y + .5 - area.y) < area.radius);
+      return DUNGEON_GID + (plaza ? 14 : 40);
     }
     const top = !isPath(x, y - 1), bottom = !isPath(x, y + 1);
     const left = !isPath(x - 1, y), right = !isPath(x + 1, y);

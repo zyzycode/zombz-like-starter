@@ -21,7 +21,8 @@ export const ARENA_LAYOUTS: Record<string, ArenaLayout> = {
     restoration: { x: 160, y: 352 },
   },
   'grove-2': {
-    trails: [trail(2.8, [0, 17], [8, 15], [15, 11], [23, 6], [30, 5]), trail(2, [15, 11], [23, 16], [30, 17])],
+    trails: [trail(2.8, [0, 17], [8, 15], [15, 11], [23, 6], [30, 5]), trail(2, [15, 11], [23, 16], [30, 17]),
+      trail(2, [15, 11], [25, 11])],
     clearings: [{ x: 15, y: 11, radius: 3 }, { x: 25, y: 11, radius: 2.3 }],
     islands: sites([288, 240], [544, 176], [288, 540], [624, 520]),
     restoration: { x: 800, y: 352 },
@@ -39,7 +40,7 @@ export const ARENA_LAYOUTS: Record<string, ArenaLayout> = {
     restoration: { x: 800, y: 352 },
   },
   'frost-1': {
-    trails: [trail(3.2, [0, 11], [9, 11], [9, 6], [20, 6], [20, 16], [30, 16]), trail(2.2, [15, 11], [30, 11])],
+    trails: [trail(3.2, [0, 11], [9, 11], [9, 6], [20, 6], [20, 16], [30, 16]), trail(2.2, [9, 11], [30, 11])],
     clearings: [{ x: 15, y: 11, radius: 3.4 }],
     islands: sites([240, 176], [496, 192], [272, 520], [752, 520]),
     restoration: { x: 160, y: 352 },
