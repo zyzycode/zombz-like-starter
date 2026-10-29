@@ -20,4 +20,7 @@ export const SKILLS: readonly SkillDefinition[] = [
   { id: 'warrior3', name: 'Вихрь', description: 'Круговой удар: 150% урона оружия. 30 маны, 4 с перезарядки.', prerequisite: 'warrior1', maxRank: 1, bonuses: {}, unlocksAbility: 'whirlwind' },
   { id: 'mage3', name: 'Ледяная волна', description: 'Сектор перед героем: 40 × сила магии и стан 0,8 с (босс: 0,2 с). 30 маны, 7 с перезарядки.', prerequisite: 'mage1', maxRank: 1, bonuses: {}, unlocksAbility: 'frostWave' },
   { id: 'survivor3', name: 'Восстановление', description: 'Восстанавливает 35% максимального здоровья. 45 маны, 12 с перезарядки. При полном здоровье не расходуется.', prerequisite: 'survivor1', maxRank: 1, bonuses: {}, unlocksAbility: 'mend' },
+  { id: 'warrior4', name: 'Раскол', description: 'Узкий сектор 60° с дальностью 200: 220% урона оружия. 35 маны, 6,5 с перезарядки. После изучения назначь в слот.', prerequisite: 'warrior2', maxRank: 1, bonuses: {}, unlocksAbility: 'cleave' },
+  { id: 'mage4', name: 'Ледяное кольцо', description: 'Без урона: оглушает врагов вокруг на 1,8 с (босс: 0,45 с). Радиус 180, 45 маны, 11 с перезарядки. Назначь в слот.', prerequisite: 'mage2', maxRank: 1, bonuses: {}, unlocksAbility: 'iceRing' },
+  { id: 'survivor4', name: 'Второе дыхание', description: 'Восстанавливает 40% максимальной маны бесплатно. Перезарядка 18 с. При полной мане не расходуется. Назначь в слот.', prerequisite: 'survivor2', maxRank: 1, bonuses: {}, unlocksAbility: 'secondWind' },
 ];

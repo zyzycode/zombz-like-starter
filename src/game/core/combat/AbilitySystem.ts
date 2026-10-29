@@ -33,6 +33,24 @@ export class AbilitySystem {
       }, params.enemies);
     }
     if (requested.has('mend') && player.cast('mend')) player.restoreResources(0.35, 0);
+    if (requested.has('cleave') && player.cast('cleave')) {
+      const direction = vectorToDirection(input.aim.x - player.position.x, input.aim.y - player.position.y) ?? player.direction;
+      player.setCleaveDirection(direction);
+      this.resolver.resolveAttack({
+        sourceId: player.id, team: player.team, type: 'melee', damageType: 'physical',
+        damage: player.attack.config.damage * 2.2, range: 0, radius: 200, arcDegrees: 60,
+        direction, origin: { ...player.position }, knockback: 0, hitStopMs: 0,
+      }, params.enemies);
+    }
+    if (requested.has('iceRing') && player.cast('iceRing')) {
+      this.resolver.resolveAttack({
+        sourceId: player.id, team: player.team, type: 'melee', damageType: 'magic',
+        damage: 0, range: 0, radius: 180, direction: player.direction,
+        origin: { ...player.position }, knockback: 0, hitStopMs: 0,
+        statusEffects: [{ kind: 'stun', durationMs: Math.round(1800 * (1 + player.stunDurationBonus)) }],
+      }, params.enemies);
+    }
+    if (requested.has('secondWind') && player.cast('secondWind')) player.restoreResources(0, 0.4);
     if (input.shieldBashPressed && player.cast('shieldBash')) {
       const direction = vectorToDirection(input.aim.x - player.position.x, input.aim.y - player.position.y) ?? player.direction;
       player.setShieldBashDirection(direction);

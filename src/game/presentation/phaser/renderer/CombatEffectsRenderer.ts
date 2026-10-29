@@ -16,7 +16,10 @@ export class CombatEffectsRenderer {
   private shieldBashRemainingMs = 0;
   private shieldBashPosition: Vector2 = { x: 0, y: 0 };
   private shieldBashDirection: Direction = 'down';
-  private readonly learnedEffects = { whirlwind: newEffect(), frostWave: newEffect(), mend: newEffect() };
+  private readonly learnedEffects = {
+    whirlwind: newEffect(), frostWave: newEffect(), mend: newEffect(),
+    cleave: newEffect(), iceRing: newEffect(), secondWind: newEffect(),
+  };
   private novaPosition: Vector2 = { x: 0, y: 0 };
 
   constructor(scene: Phaser.Scene) {
@@ -77,13 +80,13 @@ export class CombatEffectsRenderer {
 
   private drawLearnedEffects(state: WorldState, deltaMs: number) {
     const abilities = state.player.abilities;
-    for (const name of ['whirlwind', 'frostWave', 'mend'] as const) {
+    for (const name of ['whirlwind', 'frostWave', 'mend', 'cleave', 'iceRing', 'secondWind'] as const) {
       const effect = this.learnedEffects[name];
       const pulse = abilities?.[`${name}Pulse`] ?? 0;
-      const duration = name === 'mend' ? 600 : 360;
+      const duration = name === 'mend' || name === 'secondWind' ? 600 : name === 'iceRing' ? 480 : 360;
       if (effect.pulse !== null && pulse !== effect.pulse) {
         effect.position = { ...state.player.position };
-        effect.direction = abilities?.frostWaveDirection ?? state.player.direction;
+        effect.direction = (name === 'cleave' ? abilities?.cleaveDirection : abilities?.frostWaveDirection) ?? state.player.direction;
         effect.remainingMs = duration;
       }
       effect.pulse = pulse;
@@ -100,6 +103,17 @@ export class CombatEffectsRenderer {
       } else if (name === 'frostWave') {
         drawAttackShape(this.ground, effect.position, effect.direction,
           { range: 0, radius: 200, arcDegrees: 90 }, 0x9defff, .25 * opacity, progress);
+      } else if (name === 'cleave') {
+        drawAttackShape(this.ground, effect.position, effect.direction,
+          { range: 0, radius: 200, arcDegrees: 60 }, 0xffba62, .3 * opacity, progress);
+      } else if (name === 'iceRing') {
+        this.ground.fillStyle(0x7adfff, .12 * opacity).fillCircle(x, y, 180);
+        this.ground.lineStyle(3, 0xb3f3ff, opacity).strokeCircle(x, y, 180);
+        this.air.lineStyle(4, 0x7adfff, opacity).strokeCircle(x, y, 30 + progress * 150);
+      } else if (name === 'secondWind') {
+        this.ground.lineStyle(2, 0x83baff, opacity).strokeCircle(x, y, 18 + progress * 22);
+        this.air.lineStyle(3, 0x83baff, opacity).strokeEllipse(x, y - 20 - progress * 45, 42, 14);
+        this.air.lineStyle(2, 0xc5e5ff, opacity).strokeEllipse(x, y - progress * 32, 28, 10);
       } else {
         this.ground.lineStyle(3, 0x9ff1b7, opacity).strokeCircle(x, y, 20 + progress * 35);
         this.air.lineStyle(3, 0x9ff1b7, opacity);

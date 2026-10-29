@@ -17,10 +17,10 @@ function Meter({ label, value, max, kind }: { label: string; value: number; max:
   </div>;
 }
 
-function Ability({ hotkey, name, cooldown, description, mana = Infinity, cost = 0, locked = false, fullHealth = false, empty = false }: {
-  hotkey: string; name: string; cooldown: number; description?: string; mana?: number; cost?: number; locked?: boolean; fullHealth?: boolean; empty?: boolean;
+function Ability({ hotkey, name, cooldown, description, mana = Infinity, cost = 0, locked = false, fullHealth = false, fullMana = false, empty = false }: {
+  hotkey: string; name: string; cooldown: number; description?: string; mana?: number; cost?: number; locked?: boolean; fullHealth?: boolean; fullMana?: boolean; empty?: boolean;
 }) {
-  const status = empty ? 'Свободно' : locked ? 'Не изучено' : cooldown > 0 ? `${(cooldown / 1000).toFixed(1)} с` : mana < cost ? 'Нет маны' : fullHealth ? 'HP полные' : cost > 0 ? `${cost} маны` : 'Готово';
+  const status = empty ? 'Свободно' : locked ? 'Не изучено' : cooldown > 0 ? `${(cooldown / 1000).toFixed(1)} с` : mana < cost ? 'Нет маны' : fullHealth ? 'HP полные' : fullMana ? 'Мана полная' : cost > 0 ? `${cost} маны` : 'Готово';
   return <div title={description} className={`ability ${cooldown > 0 ? 'cooling' : ''} ${locked || empty ? 'locked' : ''}`}>
     <kbd>{hotkey}</kbd><span>{name}</span><small>{status}</small>
   </div>;
@@ -50,6 +50,9 @@ export function Hud() {
     whirlwind: 'Изучи в ветке Воина · круговой удар',
     frostWave: `Изучи в ветке Мага · ледяной сектор · ${stun(800)}`,
     mend: 'Изучи в ветке Выживания · восстановление 35% здоровья',
+    cleave: 'Изучи в ветке Воина · 220% урона оружия · сектор 60°',
+    iceRing: `Изучи в ветке Мага · кольцо без урона · ${stun(1800)}`,
+    secondWind: 'Изучи в ветке Выживания · восстановление 40% максимума маны · без затрат маны',
   };
   return <>
     <header className="sidebar-header"><span className="eyebrow">Пепельный путь <b>α</b></span><h2>{phase === 'menu' ? 'Странник' : snapshot.stage.biome}</h2><div className="section-caption muted small"><span>{phase === 'menu' ? 'Готов к новому пути' : `Уровень ${snapshot.depth} / ${snapshot.totalLevels}`}</span><span className="gold">✦ {snapshot.meta.shards}</span></div></header>
@@ -60,7 +63,7 @@ export function Hud() {
       <div className="combat-stats"><span>Урон <b>{Math.round(build.stats.damage)}</b></span><span>Броня <b>{Math.round(build.stats.armor)}</b></span><span>Магия <b>{Math.round(build.stats.spellPower * 100)}%</b></span></div>
       {(build.stats.cooldownReduction > 0 || build.stats.stunDurationBonus > 0) && <div className="combat-stats">
         {build.stats.cooldownReduction > 0 && <span title="Сокращает перезарядку новых применений Q/R/F/Z/X/C, максимум 40%. Рывок и уже запущенные таймеры не меняются.">Перезарядка <b>−{Math.round(build.stats.cooldownReduction * 1000) / 10}%</b></span>}
-        {build.stats.stunDurationBonus > 0 && <span title="Увеличивает длительность стана «Удара щитом» и «Ледяной волны», максимум 50%. Босс получает 25% итоговой длительности.">Стан <b>+{Math.round(build.stats.stunDurationBonus * 1000) / 10}%</b></span>}
+        {build.stats.stunDurationBonus > 0 && <span title="Увеличивает длительность стана «Удара щитом», «Ледяной волны» и «Ледяного кольца», максимум 50%. Босс получает 25% итоговой длительности.">Стан <b>+{Math.round(build.stats.stunDurationBonus * 1000) / 10}%</b></span>}
       </div>}
     </section>
     <section className="abilities" aria-label="Способности">
@@ -72,7 +75,7 @@ export function Hud() {
         const id = build.abilityLoadout[slot];
         if (!id) return <Ability key={slot} hotkey={slot.toUpperCase()} name="Не назначено" cooldown={0} empty description="Назначь изученную способность во вкладке «Навыки» на паузе или после зачистки." />;
         const ability = ACTIVE_ABILITIES[id];
-        return <Ability key={slot} hotkey={slot.toUpperCase()} name={ability.name} cooldown={abilities?.[ability.cooldownKey] ?? 0} cost={ability.manaCost} mana={mana} locked={!build.unlockedAbilities.includes(id)} fullHealth={id === 'mend' && (!world || world.player.hp >= world.player.maxHp)} description={`${activeDescriptions[id]} · перезарядка нового применения ${cooldown(ability.cooldownMs)}`} />;
+        return <Ability key={slot} hotkey={slot.toUpperCase()} name={ability.name} cooldown={abilities?.[ability.cooldownKey] ?? 0} cost={ability.manaCost} mana={mana} locked={!build.unlockedAbilities.includes(id)} fullHealth={id === 'mend' && (!world || world.player.hp >= world.player.maxHp)} fullMana={id === 'secondWind' && mana >= (abilities?.maxMana ?? build.stats.maxMana)} description={`${activeDescriptions[id]} · перезарядка нового применения ${cooldown(ability.cooldownMs)}`} />;
       })}
     </section>
     {world && <div className="wave-line"><span>Волна {world.wave.currentWaveIndex}/{world.wave.maxWaves}</span><span>{world.wave.activeEnemies > 0 ? `Врагов: ${world.wave.activeEnemies}` : world.wave.nextWaveInMs > 0 ? `Через ${(world.wave.nextWaveInMs / 1000).toFixed(1)}с` : 'Зачищено'}</span></div>}

@@ -140,6 +140,13 @@ export type AbilityState = {
   frostWaveDirection: Direction;
   mendCooldownMs: number;
   mendPulse: number;
+  cleaveCooldownMs: number;
+  cleavePulse: number;
+  cleaveDirection: Direction;
+  iceRingCooldownMs: number;
+  iceRingPulse: number;
+  secondWindCooldownMs: number;
+  secondWindPulse: number;
   shieldBashCooldownMs: number;
   shieldBashPulse: number;
   shieldBashDirection: Direction;

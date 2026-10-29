@@ -14,7 +14,7 @@ export class RunBuild {
   private level = 1;
   private xp = 0;
   private skillPoints = 0;
-  private skills: Record<SkillId, number> = { warrior1: 0, warrior2: 0, warrior3: 0, mage1: 0, mage2: 0, mage3: 0, survivor1: 0, survivor2: 0, survivor3: 0 };
+  private skills: Record<SkillId, number> = { warrior1: 0, warrior2: 0, warrior3: 0, warrior4: 0, mage1: 0, mage2: 0, mage3: 0, mage4: 0, survivor1: 0, survivor2: 0, survivor3: 0, survivor4: 0 };
   private inventory: Item[] = [];
   private equipment: Partial<Record<ItemSlot, string>> = {};
   private abilityLoadout: AbilityLoadout = { ...DEFAULT_ABILITY_LOADOUT };

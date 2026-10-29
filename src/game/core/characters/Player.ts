@@ -25,13 +25,16 @@ export class Player extends Character {
 
   constructor(state: PlayerState) {
     super(state);
-    this.abilities = state.abilities ? { ...state.abilities } : {
+    this.abilities = {
+      cleaveCooldownMs: 0, cleavePulse: 0, cleaveDirection: state.direction,
+      iceRingCooldownMs: 0, iceRingPulse: 0, secondWindCooldownMs: 0, secondWindPulse: 0,
       whirlwindCooldownMs: 0, whirlwindPulse: 0,
       frostWaveCooldownMs: 0, frostWavePulse: 0, frostWaveDirection: state.direction,
       mendCooldownMs: 0, mendPulse: 0,
       mana: 100, maxMana: 100, fireboltCooldownMs: 0, novaCooldownMs: 0,
       shieldBashCooldownMs: 0, shieldBashPulse: 0, shieldBashDirection: state.direction,
       dodgeCooldownMs: 0, dodgeRemainingMs: 0, novaPulse: 0,
+      ...state.abilities,
     };
   }
 
@@ -73,6 +76,7 @@ export class Player extends Character {
     if (!this.isAlive || this.stunRemainingMs > 0 || this.abilities.dodgeRemainingMs > 0) return false;
     if (isActiveAbility(spell) && (!this.unlockedAbilities.has(spell) || !Object.values(this.abilityLoadout).includes(spell))) return false;
     if (spell === 'mend' && this.hp >= this.maxHp) return false;
+    if (spell === 'secondWind' && this.abilities.mana >= this.abilities.maxMana) return false;
     const { cooldownKey: key, manaCost: cost, cooldownMs } = SPELLS[spell];
     if (this.abilities[key] > 0 || this.abilities.mana < cost) return false;
     this.abilities.mana -= cost;
@@ -141,6 +145,7 @@ export class Player extends Character {
   }
 
   setFrostWaveDirection(direction: PlayerState['direction']) { this.abilities.frostWaveDirection = direction; }
+  setCleaveDirection(direction: PlayerState['direction']) { this.abilities.cleaveDirection = direction; }
 
   setShieldBashDirection(direction: PlayerState['direction']) { this.abilities.shieldBashDirection = direction; }
 
