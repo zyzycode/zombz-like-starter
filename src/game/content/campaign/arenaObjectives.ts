@@ -4,6 +4,7 @@ import type { CampaignStage } from '@/game/content/campaign/campaign';
 const positions: Record<string, [number, number][]> = {
   'ruins-1': [[624, 144]],
   'ruins-2': [[624, 176], [432, 560]],
+  'ruins-alt': [[480, 192]],
   'frost-1': [[656, 208], [464, 560]],
 };
 

@@ -52,6 +52,14 @@ export const ARENA_LAYOUTS: Record<string, ArenaLayout> = {
     islands: sites([256, 352], [672, 352], [352, 120], [608, 584], [232, 224], [720, 512]),
     restoration: { x: 800, y: 352 },
   },
+  'ruins-alt': {
+    story: 'courtyard',
+    trails: [trail(4.5, [0, 11], [30, 11]), trail(4, [15, 0], [15, 22]),
+      trail(3.5, [5, 11], [9, 6], [21, 6], [25, 11]), trail(3.5, [15, 11], [19, 17], [25, 17], [30, 19])],
+    clearings: [{ x: 15, y: 11, radius: 4.4 }, { x: 15, y: 6, radius: 2.8 }, { x: 25, y: 17.5, radius: 2.8 }],
+    islands: sites([288, 208], [672, 176], [320, 480], [624, 512]),
+    restoration: { x: 160, y: 352 },
+  },
   'frost-1': {
     story: 'threshold',
     trails: [trail(4, [0, 11], [9, 11], [9, 6], [20, 6], [20, 16], [30, 16]), trail(3.2, [9, 11], [30, 11])],

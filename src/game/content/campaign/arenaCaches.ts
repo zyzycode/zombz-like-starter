@@ -7,6 +7,7 @@ const positions: Record<string, [number, number]> = {
   'grove-alt': [800, 352],
   'ruins-1': [800, 208],
   'ruins-2': [224, 576],
+  'ruins-alt': [800, 560],
   'frost-1': [848, 288],
   'frost-2': [144, 192],
 };

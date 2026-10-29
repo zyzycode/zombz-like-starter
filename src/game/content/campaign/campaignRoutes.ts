@@ -1,11 +1,12 @@
 import { CAMPAIGN, type CampaignStage } from '@/game/content/campaign/campaign';
-import { GROVE_ALTERNATE } from '@/game/content/campaign/alternateStages';
+import { GROVE_ALTERNATE, RUINS_ALTERNATE } from '@/game/content/campaign/alternateStages';
 
-/** One authored fork rejoins the main route before the ruins. Depth remains run progress. */
+/** Authored forks rejoin at the next depth. Depth remains run progress. */
 export function getRouteChoices(depth: number): CampaignStage[] {
   const main = CAMPAIGN[depth - 1];
   if (!main) return [];
-  return depth === 2 ? [main, GROVE_ALTERNATE] : [main];
+  if (depth === 2) return [main, GROVE_ALTERNATE];
+  return depth === 4 ? [main, RUINS_ALTERNATE] : [main];
 }
 
 export function resolveCampaignStage(depth: number, stageId?: string): CampaignStage | undefined {
