@@ -1,5 +1,5 @@
 import { SKILLS } from '@/game/core/progression/skills';
-import type { BuildState, Item, ItemSlot, MetaRanks, Rarity, SkillId, Stats } from '@/game/core/progression/types';
+import type { EquipmentPreview, EquipmentPreviews, BuildState, Item, ItemSlot, MetaRanks, Rarity, SkillId, Stats } from '@/game/core/progression/types';
 
 export { SKILLS } from '@/game/core/progression/skills';
 export type { BuildState, Item, ItemSlot, MetaRanks, Rarity, SkillId, Stats } from '@/game/core/progression/types';
@@ -33,9 +33,10 @@ export class RunBuild {
   }
 
   getState(): BuildState {
+    const stats = this.calculateStats();
     return structuredClone({
       level: this.level, xp: this.xp, xpToNext: this.xpToNext(), skillPoints: this.skillPoints,
-      skills: this.skills, inventory: this.inventory, equipment: this.equipment, stats: this.calculateStats(),
+      skills: this.skills, inventory: this.inventory, equipment: this.equipment, stats, equipmentPreviews: this.createEquipmentPreviews(stats),
     });
   }
 
@@ -81,9 +82,39 @@ export class RunBuild {
 
   equip(itemId: string): boolean {
     const item = this.inventory.find((candidate) => candidate.id === itemId);
-    if (!item) return false;
+    if (!item || this.equipment[item.slot] === item.id) return false;
     this.equipment[item.slot] = item.id;
     return true;
+  }
+
+  unequip(slot: ItemSlot): boolean {
+    if (!this.equipment[slot]) return false;
+    delete this.equipment[slot];
+    return true;
+  }
+
+  private createEquipmentPreviews(current: Stats): EquipmentPreviews {
+    const equip: EquipmentPreviews['equip'] = {};
+    const unequip: EquipmentPreviews['unequip'] = {};
+    for (const item of this.inventory) {
+      equip[item.id] = this.previewEquipment({ ...this.equipment, [item.slot]: item.id }, current);
+    }
+    for (const slot of SLOTS) {
+      if (!this.equipment[slot]) continue;
+      const equipment = { ...this.equipment };
+      delete equipment[slot];
+      unequip[slot] = this.previewEquipment(equipment, current);
+    }
+    return { equip, unequip };
+  }
+
+  private previewEquipment(equipment: Partial<Record<ItemSlot, string>>, current: Stats): EquipmentPreview {
+    const stats = this.calculateStats(equipment);
+    const delta = { ...stats };
+    for (const key of Object.keys(stats) as (keyof Stats)[]) {
+      delta[key] = Math.round((stats[key] - current[key]) * 10000) / 10000;
+    }
+    return { stats, delta };
   }
 
   learn(skillId: SkillId): boolean {
@@ -97,7 +128,7 @@ export class RunBuild {
 
   private xpToNext() { return 40 + (this.level - 1) * 25; }
 
-  private calculateStats(): Stats {
+  private calculateStats(equipment = this.equipment): Stats {
     const stats = { ...BASE_STATS };
     stats.maxHp += this.metaRanks.vitality * 10;
     stats.damage += this.metaRanks.might * 5;
@@ -107,7 +138,7 @@ export class RunBuild {
       for (const key of Object.keys(bonuses) as (keyof Stats)[]) stats[key] += (bonuses[key] ?? 0) * scale;
     };
     for (const definition of SKILLS) add(definition.bonuses, this.skills[definition.id]);
-    for (const item of this.inventory) if (this.equipment[item.slot] === item.id) add(item.bonuses);
+    for (const item of this.inventory) if (equipment[item.slot] === item.id) add(item.bonuses);
     stats.spellPower = Math.round(stats.spellPower * 100) / 100;
     return stats;
   }

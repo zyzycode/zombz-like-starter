@@ -1,6 +1,6 @@
 import { Character } from '@/game/core/characters/Character';
 import type { AttackController } from '@/game/core/combat/AttackController';
-import type { Stats } from '@/game/core/progression/types';
+import type { BuildResourcePolicy, Stats } from '@/game/core/progression/types';
 import type { StatusEffect, AbilityState, AttackPayload, DamageType, InputState, PlayerState, Vector2 } from '@/shared/types/game';
 
 const SPELLS = {
@@ -26,11 +26,13 @@ export class Player extends Character {
     };
   }
 
-  applyBuild(stats: Stats) {
+  applyBuild(stats: Stats, resourcePolicy: BuildResourcePolicy = 'preserve-deficit') {
     const wasAlive = this.isAlive;
     const missingHp = this.maxHp - this.hp;
     this.maxHp = stats.maxHp;
-    this.hp = wasAlive ? Math.max(0, Math.min(stats.maxHp, stats.maxHp - missingHp)) : 0;
+    // Equipment changes neither heal nor kill a living wearer when maximum HP drops.
+    const nextHp = resourcePolicy === 'preserve-current' ? this.hp : stats.maxHp - missingHp;
+    this.hp = wasAlive ? Math.max(0, Math.min(stats.maxHp, nextHp)) : 0;
     this.attack.config.damage = stats.damage;
     this.speed = stats.moveSpeed;
     this.abilities.maxMana = stats.maxMana;

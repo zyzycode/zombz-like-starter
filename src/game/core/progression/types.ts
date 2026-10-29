@@ -20,6 +20,13 @@ export type Item = {
   rarity: Rarity;
   bonuses: Partial<Stats>;
 };
+export type EquipmentPreview = { stats: Stats; delta: Stats };
+export type EquipmentPreviews = {
+  equip: Record<string, EquipmentPreview>;
+  unequip: Partial<Record<ItemSlot, EquipmentPreview>>;
+};
+export type BuildResourcePolicy = 'preserve-deficit' | 'preserve-current';
+
 export type BuildState = {
   level: number;
   xp: number;
@@ -28,5 +35,6 @@ export type BuildState = {
   skills: Record<SkillId, number>;
   inventory: Item[];
   equipment: Partial<Record<ItemSlot, string>>;
+  equipmentPreviews: EquipmentPreviews;
   stats: Stats;
 };

@@ -1,6 +1,6 @@
 import { RunBuild } from '@/game/core/progression/RunBuild';
 import { MetaProgression } from '@/game/core/meta/MetaProgression';
-import type { MetaUpgradeId, SkillId } from '@/game/core/progression/types';
+import type { ItemSlot, MetaUpgradeId, SkillId } from '@/game/core/progression/types';
 import { RunSession } from '@/game/core/world/RunSession';
 import { GameWorld } from '@/game/core/world/GameWorld';
 import type { BuiltLevel } from '@/game/world/level/types';
@@ -96,7 +96,12 @@ export class RunController {
 
   equip(id: string) {
     if (!this.canEditBuild() || !this.build.equip(id)) return;
-    this.world?.applyBuild(this.build.getState().stats);
+    this.world?.applyBuild(this.build.getState().stats, 'preserve-current');
+  }
+
+  unequip(slot: ItemSlot) {
+    if (!this.canEditBuild() || !this.build.unequip(slot)) return;
+    this.world?.applyBuild(this.build.getState().stats, 'preserve-current');
   }
 
   learn(id: SkillId) {

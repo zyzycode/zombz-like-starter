@@ -40,6 +40,7 @@ export class CampaignScene extends Phaser.Scene {
     useHudStore.getState().setActions({
       startRun: () => act(() => run.startRun()),
       chooseReward: (id) => act(() => run.chooseReward(id)),
+      unequip: (slot) => act(() => run.unequip(slot)),
       equip: (id) => act(() => run.equip(id)), learn: (id) => act(() => run.learn(id)),
       buyMetaUpgrade: (id) => act(() => run.buyMetaUpgrade(id)),
       togglePause: () => act(() => run.togglePause()), returnToMenu: () => act(() => run.returnToMenu()),

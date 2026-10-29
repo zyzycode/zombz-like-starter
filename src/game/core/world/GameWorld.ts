@@ -2,7 +2,7 @@ import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
 import { RestorationSystem } from '@/game/core/environment/RestorationSystem';
 import { HazardSystem } from '@/game/core/environment/HazardSystem';
 import { ProjectileSystem } from '@/game/core/combat/ProjectileSystem';
-import type { Stats } from '@/game/core/progression/types';
+import type { BuildResourcePolicy, Stats } from '@/game/core/progression/types';
 import { Player } from '@/game/core/characters/Player';
 import { ExtractionSystem } from '@/game/core/extraction/ExtractionSystem';
 import { ExtractionZone } from '@/game/core/extraction/ExtractionZone';
@@ -146,7 +146,7 @@ export class GameWorld {
     });
   }
 
-  applyBuild(stats: Stats) { this.player.applyBuild(stats); }
+  applyBuild(stats: Stats, resourcePolicy?: BuildResourcePolicy) { this.player.applyBuild(stats, resourcePolicy); }
 
   restoreBetweenLevels() {
     this.player.hp = Math.min(this.player.maxHp, this.player.hp + Math.ceil(this.player.maxHp * 0.25));
