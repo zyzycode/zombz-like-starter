@@ -4,8 +4,8 @@ import type { ItemDefinition } from '@/game/core/progression/types';
 export const ITEM_DEFINITIONS: readonly ItemDefinition[] = [
   {
     id: 'weapon-guard-blade', name: 'Клинок стража', slot: 'weapon',
-    description: 'Тяжёлый клинок для сильных ударов в ближнем бою.',
-    baseBonuses: { damage: 14 },
+    description: 'Усиливает ближние удары и продлевает стан Удара щитом (F) и Ледяной волны (X).',
+    baseBonuses: { damage: 14, stunDurationBonus: 0.1 },
   },
   {
     id: 'weapon-ember-blade', name: 'Клинок углей', slot: 'weapon',
@@ -24,8 +24,8 @@ export const ITEM_DEFINITIONS: readonly ItemDefinition[] = [
   },
   {
     id: 'armor-ash-robe', name: 'Мантия пепла', slot: 'armor',
-    description: 'Запас маны и сила магии вместо тяжёлой защиты.',
-    baseBonuses: { maxMana: 18, spellPower: 0.1 },
+    description: 'Даёт ману и силу магии, сокращает перезарядку способностей Q/R/F/Z/X/C. На рывок не влияет.',
+    baseBonuses: { maxMana: 18, spellPower: 0.1, cooldownReduction: 0.06 },
   },
   {
     id: 'armor-traveller-coat', name: 'Куртка странника', slot: 'armor',
@@ -34,8 +34,8 @@ export const ITEM_DEFINITIONS: readonly ItemDefinition[] = [
   },
   {
     id: 'charm-iron-seal', name: 'Железная печать', slot: 'charm',
-    description: 'Талисман бойца: усиливает удары и добавляет немного брони.',
-    baseBonuses: { damage: 6, armor: 1 },
+    description: 'Добавляет урон и броню, продлевает стан Удара щитом (F) и Ледяной волны (X).',
+    baseBonuses: { damage: 6, armor: 1, stunDurationBonus: 0.08 },
   },
   {
     id: 'charm-ether-heart', name: 'Сердце эфира', slot: 'charm',
@@ -54,8 +54,8 @@ export const ITEM_DEFINITIONS: readonly ItemDefinition[] = [
   },
   {
     id: 'helmet-ember-circlet', name: 'Венец углей', slot: 'helmet',
-    description: 'Увеличивает запас маны и усиливает заклинания.',
-    baseBonuses: { maxMana: 10, spellPower: 0.06 },
+    description: 'Усиливает магию, даёт ману и сокращает перезарядку способностей Q/R/F/Z/X/C. На рывок не влияет.',
+    baseBonuses: { maxMana: 10, spellPower: 0.06, cooldownReduction: 0.04 },
   },
   {
     id: 'helmet-scout-hood', name: 'Капюшон разведчика', slot: 'helmet',

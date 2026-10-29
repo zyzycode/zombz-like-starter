@@ -9,18 +9,21 @@ export const RARITY_LABELS = { common: 'Обычное', rare: 'Редкое', e
 const STAT_LABELS: Record<keyof Stats, string> = {
   maxHp: 'здоровье', damage: 'урон', moveSpeed: 'скорость', maxMana: 'мана',
   manaRegen: 'мана/сек', spellPower: 'сила магии', armor: 'броня',
+  cooldownReduction: 'сокращение перезарядки', stunDurationBonus: 'длительность стана',
 };
+const isPercentageStat = (key: string) => key === 'spellPower' || key === 'cooldownReduction' || key === 'stunDurationBonus';
+const percentageValue = (value: number) => Math.round(value * 1000) / 10;
 
 export function ItemBonuses({ item }: { item: Item }) {
   return <ul className="item-bonuses">{Object.entries(item.bonuses).filter(([, value]) => value !== 0).map(([key, value]) => (
-    <li key={key}><b>+{key === 'spellPower' ? `${Math.round(value * 100)}%` : Math.round(value)}</b> {STAT_LABELS[key as keyof Stats]}</li>
+    <li key={key}><b>+{isPercentageStat(key) ? `${percentageValue(value)}%` : Math.round(value)}</b> {STAT_LABELS[key as keyof Stats]}</li>
   ))}</ul>;
 }
 
 type PanelProps = { snapshot: RunSnapshot; actions: RunActions | null };
 
 function formatStat(key: keyof Stats, value: number) {
-  return key === 'spellPower' ? `${Math.round(value * 100)}%` : `${Math.round(value * 10) / 10}`;
+  return isPercentageStat(key) ? `${percentageValue(value)}%` : `${Math.round(value * 10) / 10}`;
 }
 
 function EquipmentComparison({ current, preview, removing }: { current: Stats; preview: EquipmentPreview; removing: boolean }) {
@@ -33,7 +36,7 @@ function EquipmentComparison({ current, preview, removing }: { current: Stats; p
       <tbody>{changes.map((key) => <tr key={key}>
         <th scope="row">{key === 'maxHp' ? 'макс. здоровье' : key === 'maxMana' ? 'макс. мана' : STAT_LABELS[key]}</th><td>{formatStat(key, current[key])}</td>
         <td><strong>{formatStat(key, preview.stats[key])}</strong><small className={preview.delta[key] > 0 ? 'stat-gain' : 'stat-loss'}>
-          {preview.delta[key] > 0 ? '+' : '−'}{key === 'spellPower' ? `${Math.round(Math.abs(preview.delta[key]) * 100)} п.п.` : formatStat(key, Math.abs(preview.delta[key]))}
+          {preview.delta[key] > 0 ? '+' : '−'}{isPercentageStat(key) ? `${percentageValue(Math.abs(preview.delta[key]))} п.п.` : formatStat(key, Math.abs(preview.delta[key]))}
         </small></td>
       </tr>)}</tbody>
     </table>}
@@ -154,5 +157,5 @@ export function MetaPanel({ snapshot, actions }: PanelProps) {
 
 export function ControlsPanel() {
   const rows = [['W A S D', 'Движение · 8 направлений'], ['Мышь', 'Направление атаки'], ['ЛКМ / Space', 'Атака · можно удерживать'], ['Q', 'Огненный болт'], ['R', 'Кольцо пламени'], ['F', 'Удар щитом · оглушение'], ['Z', 'Вихрь · после изучения'], ['X', 'Ледяная волна · после изучения'], ['C', 'Восстановление · после изучения'], ['Shift', 'Рывок и уклонение'], ['E', 'Обелиск / тайник / источник'], ['Esc', 'Пауза / продолжить']];
-  return <div className="panel-stack controls"><h3>Управление</h3>{rows.map(([key, label]) => <div key={key}><kbd>{key}</kbd><span>{label}</span></div>)}<p className="muted small">Удар направляй мышью: после начала замаха направление фиксируется. Рывок прерывает замах и помогает выйти из-под удара. Трать ману на скопления противников. Z, X и C открываются за очки в ветках навыков. F бьёт в секторе перед героем и прерывает замах врага: 25 маны, перезарядка 6 с, стан 1,4 с (босс: 0,35 с). Направляй щит мышью.</p><p className="muted small">Со второго уровня встречаются руны: жёлтый контур предупреждает об ударе. Выйди за круг или уклонись. Руны ранят и врагов — заманивай их в ловушку.</p><p className="muted small">Янтарные обелиски — обязательная цель арены. Подойди и нажми E: активированный обелиск станет зелёным. Награда откроется после всех волн и активаций. После боя можно спокойно дойти до оставшихся обелисков.</p><p className="muted small">Тайник даёт дополнительную вещь в рюкзак. После зачистки выбери «Осмотреть арену», чтобы найти пропущенное. Esc вернёт к наградам.</p><p className="muted small">Элиту выделяют кольцо и подпись. Бронированные получают меньше физического урона — используй магию. Стремительные быстрее двигаются, но их замах не ускоряется. За каждого элитного врага — дополнительный опыт.</p><p className="muted small">Временный билд сбрасывается после забега. Наследие хранится в этом браузере.</p></div>;
+  return <div className="panel-stack controls"><h3>Управление</h3>{rows.map(([key, label]) => <div key={key}><kbd>{key}</kbd><span>{label}</span></div>)}<p className="muted small">Удар направляй мышью: после начала замаха направление фиксируется. Рывок прерывает замах и помогает выйти из-под удара. Трать ману на скопления противников. Z, X и C открываются за очки в ветках навыков. F бьёт в секторе перед героем и прерывает замах врага: 25 маны, базовая перезарядка 6 с и стан 1,4 с. Бонус длительности усиливает стан F и X; на боссе он длится вчетверо меньше. Сокращение перезарядки действует на новые применения Q/R/F/Z/X/C, без рывка и уже запущенных таймеров. Направляй щит мышью.</p><p className="muted small">На части арен встречаются руны: жёлтый контур предупреждает об ударе. Выйди за круг или уклонись. Руны ранят и врагов — заманивай их в ловушку.</p><p className="muted small">Янтарные обелиски — обязательная цель арены. Подойди и нажми E: активированный обелиск станет зелёным. Награда откроется после всех волн и активаций. После боя можно спокойно дойти до оставшихся обелисков.</p><p className="muted small">Тайник даёт дополнительную вещь в рюкзак. После зачистки выбери «Осмотреть арену», чтобы найти пропущенное. Esc вернёт к наградам.</p><p className="muted small">Элиту выделяют кольцо и подпись. Бронированные получают меньше физического урона — используй магию. Стремительные быстрее двигаются, но их замах не ускоряется. За каждого элитного врага — дополнительный опыт.</p><p className="muted small">Временный билд сбрасывается после забега. Наследие хранится в этом браузере.</p></div>;
 }

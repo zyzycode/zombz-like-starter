@@ -18,6 +18,8 @@ export class Player extends Character {
   private manaRegen = 10;
   private armor = 0;
   spellPower = 1;
+  private cooldownReduction = 0;
+  stunDurationBonus = 0;
   private dodgeDirection: Vector2 = { x: 0, y: 1 };
 
   constructor(state: PlayerState) {
@@ -46,6 +48,8 @@ export class Player extends Character {
     this.manaRegen = stats.manaRegen;
     this.armor = stats.armor;
     this.spellPower = stats.spellPower;
+    this.cooldownReduction = stats.cooldownReduction ?? 0;
+    this.stunDurationBonus = stats.stunDurationBonus ?? 0;
   }
 
   setUnlockedAbilities(ids: readonly ActiveAbilityId[]) { this.unlockedAbilities = new Set(ids); }
@@ -69,7 +73,7 @@ export class Player extends Character {
     const { cooldownKey: key, manaCost: cost, cooldownMs } = SPELLS[spell];
     if (this.abilities[key] > 0 || this.abilities.mana < cost) return false;
     this.abilities.mana -= cost;
-    this.abilities[key] = cooldownMs;
+    this.abilities[key] = Math.round(cooldownMs * (1 - this.cooldownReduction));
     if (isActiveAbility(spell)) this.abilities[ACTIVE_ABILITIES[spell].pulseKey] += 1;
     if (spell === 'shieldBash') this.abilities.shieldBashPulse += 1;
     if (spell === 'nova') this.abilities.novaPulse += 1;

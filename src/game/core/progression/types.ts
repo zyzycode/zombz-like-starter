@@ -6,6 +6,8 @@ export type Stats = {
   manaRegen: number;
   spellPower: number;
   armor: number;
+  cooldownReduction: number;
+  stunDurationBonus: number;
 };
 
 export const ITEM_SLOTS = ['weapon', 'armor', 'charm', 'helmet', 'boots'] as const;

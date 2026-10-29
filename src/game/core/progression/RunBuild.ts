@@ -6,7 +6,7 @@ import type { EquipmentPreview, EquipmentPreviews, BuildState, Item, ItemSlot, M
 export { SKILLS } from '@/game/core/progression/skills';
 export type { BuildState, Item, ItemSlot, MetaRanks, Rarity, SkillId, Stats } from '@/game/core/progression/types';
 
-const BASE_STATS: Stats = { maxHp: 100, damage: 50, moveSpeed: 280, maxMana: 100, manaRegen: 10, spellPower: 1, armor: 0 };
+const BASE_STATS: Stats = { maxHp: 100, damage: 50, moveSpeed: 280, maxMana: 100, manaRegen: 10, spellPower: 1, armor: 0, cooldownReduction: 0, stunDurationBonus: 0 };
 /** Temporary character build. It has no world, rendering or persistence dependencies. */
 export class RunBuild {
   private level = 1;
@@ -78,7 +78,8 @@ export class RunBuild {
     const bonuses: Partial<Stats> = {};
     for (const key of Object.keys(definition.baseBonuses) as (keyof Stats)[]) {
       const value = (definition.baseBonuses[key] ?? 0) * strength;
-      bonuses[key] = key === 'spellPower' ? Math.round(value * 100) / 100 : Math.round(value);
+      const fractional = key === 'spellPower' || key === 'cooldownReduction' || key === 'stunDurationBonus';
+      bonuses[key] = fractional ? Math.round(value * 100) / 100 : Math.round(value);
     }
     return { id, definitionId: definition.id, name: definition.name, description: definition.description, slot, rarity, bonuses };
   }
@@ -153,6 +154,8 @@ export class RunBuild {
     for (const definition of SKILLS) add(definition.bonuses, this.skills[definition.id]);
     for (const item of this.inventory) if (equipment[item.slot] === item.id) add(item.bonuses);
     stats.spellPower = Math.round(stats.spellPower * 100) / 100;
+    stats.cooldownReduction = Math.max(0, Math.min(.4, Math.round(stats.cooldownReduction * 100) / 100));
+    stats.stunDurationBonus = Math.max(0, Math.min(.5, Math.round(stats.stunDurationBonus * 100) / 100));
     return stats;
   }
 

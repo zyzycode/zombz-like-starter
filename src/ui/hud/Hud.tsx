@@ -40,6 +40,12 @@ export function Hud() {
   const obelisks = world?.obelisks ?? [];
   const activatedObelisks = obelisks.filter((obelisk) => obelisk.activated).length;
   const playing = phase === 'playing';
+  const seconds = (ms: number) => `${(ms / 1000).toLocaleString('ru-RU', { maximumFractionDigits: 3 })} с`;
+  const cooldown = (baseMs: number) => seconds(Math.round(baseMs * (1 - build.stats.cooldownReduction)));
+  const stun = (baseMs: number) => {
+    const duration = Math.round(baseMs * (1 + build.stats.stunDurationBonus));
+    return `стан ${seconds(duration)} (босс: ${seconds(duration * .25)})`;
+  };
   return <>
     <header className="sidebar-header"><span className="eyebrow">Пепельный путь <b>α</b></span><h2>{phase === 'menu' ? 'Странник' : snapshot.stage.biome}</h2><div className="section-caption muted small"><span>{phase === 'menu' ? 'Готов к новому пути' : `Уровень ${snapshot.depth} / ${snapshot.totalLevels}`}</span><span className="gold">✦ {snapshot.meta.shards}</span></div></header>
     <section className="vitals">
@@ -47,15 +53,19 @@ export function Hud() {
       <Meter label="Мана" value={abilities?.mana ?? build.stats.maxMana} max={abilities?.maxMana ?? build.stats.maxMana} kind="mana" />
       <Meter label={`Опыт · ранг ${build.level}`} value={build.xp} max={build.xpToNext} kind="experience" />
       <div className="combat-stats"><span>Урон <b>{Math.round(build.stats.damage)}</b></span><span>Броня <b>{Math.round(build.stats.armor)}</b></span><span>Магия <b>{Math.round(build.stats.spellPower * 100)}%</b></span></div>
+      {(build.stats.cooldownReduction > 0 || build.stats.stunDurationBonus > 0) && <div className="combat-stats">
+        {build.stats.cooldownReduction > 0 && <span title="Сокращает перезарядку новых применений Q/R/F/Z/X/C, максимум 40%. Рывок и уже запущенные таймеры не меняются.">Перезарядка <b>−{Math.round(build.stats.cooldownReduction * 1000) / 10}%</b></span>}
+        {build.stats.stunDurationBonus > 0 && <span title="Увеличивает длительность стана F и X, максимум 50%. Босс получает 25% итоговой длительности.">Стан <b>+{Math.round(build.stats.stunDurationBonus * 1000) / 10}%</b></span>}
+      </div>}
     </section>
     <section className="abilities" aria-label="Способности">
-      <Ability hotkey="Q" name="Болт" cooldown={abilities?.fireboltCooldownMs ?? 0} cost={20} mana={mana} />
-      <Ability hotkey="R" name="Кольцо" cooldown={abilities?.novaCooldownMs ?? 0} cost={40} mana={mana} />
-      <Ability hotkey="F" name="Удар щитом" cooldown={abilities?.shieldBashCooldownMs ?? 0} cost={25} mana={mana} description="25 маны · 6 с · стан 1,4 с (босс: 0,35 с)" />
+      <Ability hotkey="Q" name="Болт" cooldown={abilities?.fireboltCooldownMs ?? 0} cost={20} mana={mana} description={`20 маны · перезарядка нового применения ${cooldown(550)}`} />
+      <Ability hotkey="R" name="Кольцо" cooldown={abilities?.novaCooldownMs ?? 0} cost={40} mana={mana} description={`40 маны · перезарядка нового применения ${cooldown(4500)}`} />
+      <Ability hotkey="F" name="Удар щитом" cooldown={abilities?.shieldBashCooldownMs ?? 0} cost={25} mana={mana} description={`25 маны · перезарядка нового применения ${cooldown(6000)} · ${stun(1400)}`} />
       <Ability hotkey="⇧" name="Рывок" cooldown={abilities?.dodgeCooldownMs ?? 0} />
-      <Ability hotkey="Z" name="Вихрь" cooldown={abilities?.whirlwindCooldownMs ?? 0} cost={ACTIVE_ABILITIES.whirlwind.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('whirlwind')} description="Изучи в ветке Воина · круговой удар · 4 с" />
-      <Ability hotkey="X" name="Ледяная волна" cooldown={abilities?.frostWaveCooldownMs ?? 0} cost={ACTIVE_ABILITIES.frostWave.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('frostWave')} description="Изучи в ветке Мага · ледяной сектор со станом · 7 с" />
-      <Ability hotkey="C" name="Восстановление" cooldown={abilities?.mendCooldownMs ?? 0} cost={ACTIVE_ABILITIES.mend.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('mend')} fullHealth={!world || world.player.hp >= world.player.maxHp} description="Изучи в ветке Выживания · восстановление 35% здоровья · 12 с" />
+      <Ability hotkey="Z" name="Вихрь" cooldown={abilities?.whirlwindCooldownMs ?? 0} cost={ACTIVE_ABILITIES.whirlwind.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('whirlwind')} description={`Изучи в ветке Воина · круговой удар · перезарядка нового применения ${cooldown(ACTIVE_ABILITIES.whirlwind.cooldownMs)}`} />
+      <Ability hotkey="X" name="Ледяная волна" cooldown={abilities?.frostWaveCooldownMs ?? 0} cost={ACTIVE_ABILITIES.frostWave.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('frostWave')} description={`Изучи в ветке Мага · ледяной сектор · ${stun(800)} · перезарядка нового применения ${cooldown(ACTIVE_ABILITIES.frostWave.cooldownMs)}`} />
+      <Ability hotkey="C" name="Восстановление" cooldown={abilities?.mendCooldownMs ?? 0} cost={ACTIVE_ABILITIES.mend.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('mend')} fullHealth={!world || world.player.hp >= world.player.maxHp} description={`Изучи в ветке Выживания · восстановление 35% здоровья · перезарядка нового применения ${cooldown(ACTIVE_ABILITIES.mend.cooldownMs)}`} />
     </section>
     {world && <div className="wave-line"><span>Волна {world.wave.currentWaveIndex}/{world.wave.maxWaves}</span><span>{world.wave.activeEnemies > 0 ? `Врагов: ${world.wave.activeEnemies}` : world.wave.nextWaveInMs > 0 ? `Через ${(world.wave.nextWaveInMs / 1000).toFixed(1)}с` : 'Зачищено'}</span></div>}
     {eliteObjective && eliteObjective.total > 0 && <div className="elite-objective" title="Броня снижает физический урон; магия действует полностью. Стремительная элита быстрее движется, но не ускоряет замах.">

@@ -24,7 +24,7 @@ export class AbilitySystem {
         sourceId: player.id, team: player.team, type: 'melee', damageType: 'magic',
         damage: 40 * player.spellPower, range: 0, radius: 200, arcDegrees: 90,
         direction, origin: { ...player.position }, knockback: 0, hitStopMs: 0,
-        statusEffects: [{ kind: 'stun', durationMs: 800 }],
+        statusEffects: [{ kind: 'stun', durationMs: Math.round(800 * (1 + player.stunDurationBonus)) }],
       }, params.enemies);
     }
     if (input.mendPressed && player.cast('mend')) player.restoreResources(0.35, 0);
@@ -35,7 +35,7 @@ export class AbilitySystem {
         sourceId: player.id, team: player.team, type: 'melee', damageType: 'physical',
         damage: player.attack.config.damage * 0.6, range: 0, radius: 110, arcDegrees: 120,
         direction, origin: { ...player.position }, knockback: 0, hitStopMs: 0,
-        statusEffects: [{ kind: 'stun', durationMs: 1400 }],
+        statusEffects: [{ kind: 'stun', durationMs: Math.round(1400 * (1 + player.stunDurationBonus)) }],
       }, params.enemies);
     }
     if (input.fireboltPressed && player.cast('firebolt')) {
