@@ -242,3 +242,7 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
 .elite-objective { display: flex; justify-content: space-between; gap: 8px; padding: 0 20px 8px; font-size: 10px; color: #e8cc91; }
 .elite-objective b { font-weight: 500; font-variant-numeric: tabular-nums; }
 .elite-objective > span:last-child { color: #c9bd9f; }
+
+.obelisk-objective { display: flex; justify-content: space-between; gap: 8px; margin: 0 20px 8px; padding: 7px 0; border-block: 1px solid #c99c4d40; color: #efcc8a; font-size: 10px; }
+.obelisk-objective b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.obelisk-objective.complete { color: #a3d8b3; border-color: #a3d8b330; }

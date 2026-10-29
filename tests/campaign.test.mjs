@@ -18,6 +18,11 @@ function clearLevel(run) {
     // Combat seam: kill current enemies, retaining actual wave/director/session cleanup.
     for (const enemy of run.getWorld().enemies) enemy.hp = 0;
     run.update(100, idle);
+    for (const obelisk of run.getState().world.obelisks ?? []) {
+      if (obelisk.activated || run.getPhase() !== 'playing') continue;
+      run.getWorld().player.position = { ...obelisk.position };
+      run.update(16, { ...idle, interactPressed: true });
+    }
   }
   assert.equal(run.getPhase(), 'reward', 'all configured waves must lead to a reward');
 }

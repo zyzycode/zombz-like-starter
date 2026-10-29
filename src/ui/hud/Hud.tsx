@@ -37,6 +37,8 @@ export function Hud() {
   const caches = world?.caches ?? [];
   const openedCaches = caches.filter((cache) => cache.opened).length;
   const eliteObjective = world?.eliteObjective;
+  const obelisks = world?.obelisks ?? [];
+  const activatedObelisks = obelisks.filter((obelisk) => obelisk.activated).length;
   const playing = phase === 'playing';
   return <>
     <header className="sidebar-header"><span className="eyebrow">Пепельный путь <b>α</b></span><h2>{phase === 'menu' ? 'Странник' : snapshot.stage.biome}</h2><div className="section-caption muted small"><span>{phase === 'menu' ? 'Готов к новому пути' : `Уровень ${snapshot.depth} / ${snapshot.totalLevels}`}</span><span className="gold">✦ {snapshot.meta.shards}</span></div></header>
@@ -59,10 +61,13 @@ export function Hud() {
     {eliteObjective && eliteObjective.total > 0 && <div className="elite-objective" title="Броня снижает физический урон; магия действует полностью. Стремительная элита быстрее движется, но не ускоряет замах.">
       <span>{eliteObjective.defeated >= eliteObjective.total ? 'Элита повержена' : 'Победи элиту'} <b>{eliteObjective.defeated}/{eliteObjective.total}</b></span><span>+{ELITE_BONUS_XP} опыта за врага</span>
     </div>}
+    {obelisks.length > 0 && <div className={`obelisk-objective ${activatedObelisks === obelisks.length ? 'complete' : ''}`} role="status">
+      <span>Обелиски <b>{activatedObelisks}/{obelisks.length}</b></span><span>{activatedObelisks === obelisks.length ? 'Активированы' : 'Для награды · E'}</span>
+    </div>}
     {caches.length > 0 && <div className="cache-progress"><span>Тайники {openedCaches}/{caches.length}</span><span>{openedCaches < caches.length ? 'Найди · открой на E' : 'Всё найдено'}</span></div>}
     {snapshot.lastCacheItem && <p className="cache-find" role="status">В рюкзаке: <strong className={`rarity-${snapshot.lastCacheItem.rarity}`}>{snapshot.lastCacheItem.name}</strong></p>}
     {phase === 'exploring' && <button className="button primary pause-button" onClick={() => actions?.finishExploration()}>К наградам <kbd>Esc</kbd></button>}
-    {(playing || phase === 'paused') && <button className="button secondary pause-button" onClick={() => actions?.togglePause()}>{playing ? 'Пауза и развитие' : 'Продолжить бой'} <kbd>Esc</kbd></button>}
+    {(playing || phase === 'paused') && <button className="button secondary pause-button" onClick={() => actions?.togglePause()}>{playing ? 'Пауза и развитие' : world?.status === 'securing' ? 'Продолжить путь' : 'Продолжить бой'} <kbd>Esc</kbd></button>}
     {build.skillPoints > 0 && <button className="skill-points-banner" onClick={() => { if (playing) actions?.togglePause(); else if (phase === 'exploring') actions?.finishExploration(); setTab('skills'); }}>Доступно очков навыков: {build.skillPoints} <span>→</span></button>}
     <nav className="hud-tabs" aria-label="Панели персонажа">{TABS.map((entry) => <button key={entry.id} className={tab === entry.id ? 'active' : ''} aria-pressed={tab === entry.id} onClick={() => setTab(entry.id)}>{entry.label}</button>)}</nav>
     <div className="hud-tab-content">

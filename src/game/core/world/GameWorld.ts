@@ -1,3 +1,4 @@
+import { ObeliskSystem } from '@/game/core/environment/ObeliskSystem';
 import { CacheSystem } from '@/game/core/environment/CacheSystem';
 import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
 import { RestorationSystem } from '@/game/core/environment/RestorationSystem';
@@ -34,11 +35,12 @@ import type { InputState, Vector2 } from '@/shared/types/game';
  */
 export class GameWorld {
   private readonly mode: 'extraction' | 'campaign';
-  private status: 'active' | 'cleared' | 'dead' = 'active';
+  private status: 'active' | 'securing' | 'cleared' | 'dead' = 'active';
   private clearedWaves = 0;
   private defeatedElites = 0;
   private readonly totalElites: number;
   private readonly abilities = new AbilitySystem();
+  private readonly obelisks: ObeliskSystem;
   private readonly caches: CacheSystem;
   private openedCaches: string[] = [];
   private readonly restoration: RestorationSystem;
@@ -90,6 +92,7 @@ export class GameWorld {
     this.totalElites = builtLevel.level.rules.waves.enabled
       ? builtLevel.level.rules.waves.table.reduce((total, wave) => total + wave.spawns.reduce((count, spawn) => count + (spawn.elite ? spawn.count : 0), 0), 0)
       : 0;
+    this.obelisks = new ObeliskSystem(builtLevel.map.obelisks ?? []);
     this.caches = new CacheSystem(builtLevel.map.caches ?? []);
     this.restoration = new RestorationSystem(state.restorationSites ?? []);
     this.hazards = new HazardSystem(builtLevel.map.hazards ?? []);
@@ -124,6 +127,7 @@ export class GameWorld {
       status: this.status,
       eliteObjective: { total: this.totalElites, defeated: this.defeatedElites },
       projectiles: this.projectiles.getState(),
+      obelisks: this.obelisks.getState(),
       caches: this.caches.getState(),
       restorationSites: this.restoration.getState(),
       hazards: this.hazards.getState(),
@@ -170,6 +174,7 @@ export class GameWorld {
   }
 
   private interactWithEnvironment(input: InputState) {
+    if (this.obelisks.tryActivate(this.player, input)) return;
     const cacheId = this.caches.tryOpen(this.player, input);
     if (cacheId !== null) this.openedCaches.push(cacheId);
     else this.restoration.update(this.player, input);
@@ -184,6 +189,13 @@ export class GameWorld {
   }
 
   update(deltaMs: number, input: InputState) {
+    if (this.mode === 'campaign' && this.status === 'securing') {
+      if (!this.player.isAlive || this.runSession.getResult()) return;
+      this.player.moveInExploration(input, deltaMs, this.resolveCharacterCollision);
+      this.interactWithEnvironment(input);
+      if (this.obelisks.isComplete()) this.status = 'cleared';
+      return;
+    }
     if (this.mode === 'campaign' && this.status !== 'active') return;
     if (this.hitStopRemainingMs > 0) {
       this.hitStopRemainingMs = Math.max(0, this.hitStopRemainingMs - deltaMs);
@@ -292,7 +304,9 @@ export class GameWorld {
 
     if (this.mode === 'campaign') {
       if (!this.player.isAlive) this.status = 'dead';
-      else if (this.clearedWaves >= this.maxWaves && this.enemies.length === 0) this.status = 'cleared';
+      else if (this.clearedWaves >= this.maxWaves && this.enemies.length === 0) {
+        this.status = this.obelisks.isComplete() ? 'cleared' : 'securing';
+      }
     } else {
       this.extractionSystem.update({ actor: this.player, zones: this.extractionZones, deltaMs, playerTookDamage, runSession: this.runSession });
       if (!this.player.isAlive) this.runSession.complete('died');

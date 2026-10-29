@@ -1,3 +1,4 @@
+import type { ObeliskState } from '@/game/core/environment/Obelisk';
 import type { ExplorationCacheState } from '@/game/core/environment/ExplorationCache';
 import type { RunResult } from '@/game/core/extraction/RunResult';
 import type { RunSessionState } from '@/game/core/world/RunSession';
@@ -15,8 +16,9 @@ import type {
 
 export type WorldState = {
   eliteObjective?: { total: number; defeated: number };
-  status?: 'active' | 'cleared' | 'dead';
+  status?: 'active' | 'securing' | 'cleared' | 'dead';
   projectiles?: ProjectileState[];
+  obelisks?: ObeliskState[];
   caches?: ExplorationCacheState[];
   restorationSites?: RestorationSiteState[];
   hazards?: ArenaHazardState[];

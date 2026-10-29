@@ -49,6 +49,7 @@ export class LevelBuilder {
       spatialGrid,
       enemySpawnPoints,
       initialState: {
+        obelisks: (map.obelisks ?? []).map((obelisk) => ({ ...structuredClone(obelisk), activated: false })),
         caches: (map.caches ?? []).map((cache) => ({ ...structuredClone(cache), opened: false })),
         restorationSites: (map.restorationSites ?? []).map((site) => ({ ...structuredClone(site), used: false })),
         refs: {

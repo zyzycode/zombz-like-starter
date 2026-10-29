@@ -6,6 +6,7 @@ import { CombatEffectsRenderer } from '@/game/presentation/phaser/renderer/Comba
 import { EntityRenderer } from '@/game/presentation/phaser/renderer/EntityRenderer';
 import { MapRenderer } from '@/game/presentation/phaser/renderer/MapRenderer';
 import { CacheView } from '@/game/presentation/phaser/objects/CacheView';
+import { ObjectiveView } from '@/game/presentation/phaser/objects/ObjectiveView';
 import { HazardView } from '@/game/presentation/phaser/objects/HazardView';
 
 const CAMERA_ZOOM = 1.5;
@@ -20,6 +21,7 @@ export class WorldRenderer {
   private readonly effectRenderer: CombatEffectsRenderer;
   private readonly hazardView: HazardView;
   private readonly cacheView: CacheView;
+  private readonly objectiveView: ObjectiveView;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.mapRenderer = new MapRenderer(scene);
@@ -27,6 +29,7 @@ export class WorldRenderer {
     this.effectRenderer = new CombatEffectsRenderer(scene);
     this.hazardView = new HazardView(scene);
     this.cacheView = new CacheView(scene);
+    this.objectiveView = new ObjectiveView(scene);
   }
 
   initialize(map: MapDefinition, initialState: WorldState, camera: Camera) {
@@ -36,10 +39,12 @@ export class WorldRenderer {
   }
 
   render(state: WorldState, deltaMs: number) {
+    const safe = state.status === 'cleared' || state.status === 'securing';
     this.entityRenderer.render(state, deltaMs);
-    this.effectRenderer.render(state.status === 'cleared' ? { ...state, projectiles: [] } : state, deltaMs);
-    this.hazardView.render(state.status === 'cleared' ? [] : state.hazards ?? []);
+    this.effectRenderer.render(safe ? { ...state, projectiles: [] } : state, deltaMs);
+    this.hazardView.render(safe ? [] : state.hazards ?? []);
     this.cacheView.render(state.caches ?? [], state.player);
+    this.objectiveView.render(state.obelisks ?? [], state.player, this.scene.time.now);
   }
 
   applyCamera(camera: Camera) {
@@ -65,5 +70,6 @@ export class WorldRenderer {
     this.effectRenderer.destroy();
     this.hazardView.destroy();
     this.cacheView.destroy();
+    this.objectiveView.destroy();
   }
 }

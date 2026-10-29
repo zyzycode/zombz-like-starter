@@ -1,3 +1,4 @@
+import type { ObeliskDefinition } from '@/game/core/environment/Obelisk';
 import type { ExplorationCacheDefinition } from '@/game/core/environment/ExplorationCache';
 import type { ResourceNodeType, Vector2 } from '@/shared/types/game';
 import type { RestorationSiteDefinition } from '@/game/core/environment/RestorationSite';
@@ -110,6 +111,7 @@ export type MapDefinition = {
   groundStamps?: GroundStampDefinition[];
   markers: MapMarkerDefinition[];
   props: MapPropDefinition[];
+  obelisks?: ObeliskDefinition[];
   caches?: ExplorationCacheDefinition[];
   restorationSites?: RestorationSiteDefinition[];
   hazards?: ArenaHazardDefinition[];

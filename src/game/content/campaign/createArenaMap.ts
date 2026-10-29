@@ -1,6 +1,7 @@
 import type { GroundStampDefinition, MapDefinition } from '@/game/content/maps/types';
 import type { CampaignStage } from '@/game/content/campaign/campaign';
 import { ARENA_LAYOUTS, onTrail } from '@/game/content/campaign/arenaLayouts';
+import { createArenaObelisks } from '@/game/content/campaign/arenaObjectives';
 import { createArenaCaches } from '@/game/content/campaign/arenaCaches';
 import { createArenaHazards } from '@/game/content/campaign/arenaHazards';
 import { createArenaScenery } from '@/game/content/campaign/arenaScenery';
@@ -41,7 +42,7 @@ export function createArenaMap(stage: CampaignStage, depth: number): MapDefiniti
         id: `spawn-${index}`, kind: 'enemy_spawn' as const, position,
       })),
     ],
-    props: scenery.props, hazards: createArenaHazards(stage), caches: createArenaCaches(stage),
+    props: scenery.props, hazards: createArenaHazards(stage), caches: createArenaCaches(stage), obelisks: createArenaObelisks(stage),
     collision: [...layout.islands.map((position, index) => ({ id: `cover-${index}`, kind: 'circle' as const, position: { ...position }, radius: 26 })), ...scenery.collision],
     restorationSites: [{ id: `${stage.id}-spring`, position: layout.restoration, radius: 64, healthFraction: .35, manaFraction: .6 }],
   };
