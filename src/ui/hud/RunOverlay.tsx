@@ -14,7 +14,7 @@ export function RunOverlay() {
   if (phase === 'playing') return <div className="field-hud"><div className="stage-chip"><span className="status-dot" style={{ background: snapshot.stage.color }} /><div><span className="eyebrow">Этап {snapshot.depth} / {snapshot.totalLevels}</span><strong>{snapshot.stage.name}</strong></div></div><div className="field-hint">{securing ? 'Враги повержены. Активируй обелиски, чтобы получить награду.' : snapshot.world?.hazards?.length ? 'Жёлтая руна — уходи из круга. Ловушки ранят и врагов.' : 'Зачисти все волны'} · <kbd>E</kbd> {pendingObelisks ? 'активировать обелиск' : 'тайник / источник'} · <kbd>Esc</kbd> пауза</div></div>;
   if (phase === 'menu') return <div className="run-overlay menu-overlay"><div className="overlay-panel menu-panel">
     <div className="title-mark" aria-hidden="true">✦</div><span className="eyebrow">Одиночный roguelike · alpha</span>
-    <h1>Пепельный<br /><em>путь</em></h1><p className="intro">Шесть испытаний. Три биома. Один шанс добраться до хранителя пепла.</p>
+    <h1>Пепельный<br /><em>путь</em></h1><p className="intro">{snapshot.totalLevels} этапов: арены и лабиринты. Три биома. Один шанс добраться до хранителя пепла.</p>
     <div className="journey-line"><span>Сражайся</span><i>→</i><span>Выбирай награды</span><i>→</i><span>Создавай билд</span></div>
     <button className="button primary large" disabled={!actions} onClick={() => actions?.startRun()}>Начать забег <span>→</span></button>
     <div className="menu-controls"><span><kbd>WASD</kbd> движение</span><span><kbd>ЛКМ</kbd> удар</span><span><kbd>Q / R</kbd> магия</span><span><kbd>F</kbd> стан</span><span><kbd>Shift</kbd> рывок</span></div>

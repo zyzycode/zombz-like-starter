@@ -1,5 +1,6 @@
 import { resolveCampaignStage } from '@/game/content/campaign/campaignRoutes';
 import { createArenaMap } from '@/game/content/campaign/createArenaMap';
+import { createMazeMap, isMazeStage } from '@/game/content/campaign/createMazeMap';
 import { LevelBuilder } from '@/game/world/level/LevelBuilder';
 import type { LevelDefinition } from '@/game/content/levels/types';
 import type { RunSession } from '@/game/core/world/RunSession';
@@ -8,7 +9,7 @@ import type { PlayerState } from '@/shared/types/game';
 export async function createCampaignLevel(depth: number, runSession: RunSession, previousPlayer?: PlayerState, stageId?: string) {
   const stage = resolveCampaignStage(depth, stageId);
   if (!stage) throw new Error('Неизвестный уровень');
-  const map = createArenaMap(stage, depth);
+  const map = isMazeStage(stage.id) ? createMazeMap(stage, depth) : createArenaMap(stage, depth);
   const level: LevelDefinition = {
     id: stage.id, version: 1, mapId: map.id,
     playerSpawn: { markerKind: 'player_spawn' }, extractionZones: [], resourceSpawns: [], enemySpawners: [{ markerKind: 'enemy_spawn' }],

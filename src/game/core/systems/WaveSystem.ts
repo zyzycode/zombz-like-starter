@@ -39,6 +39,7 @@ export class WaveSystem {
     player: PlayerState;
     map: { width: number; height: number };
     spawnPoints: Vector2[];
+    resolvePosition?: (position: Vector2, radius: number) => Vector2;
   }) {
     if (!this.wavesEnabled || this.maxWaves === 0) {
       return {
@@ -68,6 +69,7 @@ export class WaveSystem {
       params.player,
       params.map,
       params.spawnPoints,
+      params.resolvePosition,
     );
 
     return {
@@ -90,21 +92,28 @@ export class WaveSystem {
     player: PlayerState,
     map: { width: number; height: number },
     spawnPoints: Vector2[],
+    resolvePosition?: (position: Vector2, radius: number) => Vector2,
   ) {
     const enemies: Enemy[] = [];
 
     for (const spawn of wave.spawns) {
       for (let i = 0; i < spawn.count; i += 1) {
         const position = this.getSpawnPosition(player.position, map, spawnPoints, this.spawnSequence + i);
-        enemies.push(
-          createEnemy(
+        const enemy = createEnemy(
             `wave-${wave.waveIndex}-enemy-${this.spawnSequence + i}`,
             position.x,
             position.y,
             spawn.archetypeId,
             spawn.elite,
-          ),
-        );
+          );
+        if (resolvePosition) {
+          const resolved = resolvePosition(position, enemy.radius);
+          if (Math.hypot(position.x - resolved.x, position.y - resolved.y) > .01) {
+            const marker = spawnPoints[(this.spawnSequence + i) % spawnPoints.length];
+            enemy.position = marker ? resolvePosition(marker, enemy.radius) : resolved;
+          }
+        }
+        enemies.push(enemy);
       }
 
       this.spawnSequence += spawn.count;

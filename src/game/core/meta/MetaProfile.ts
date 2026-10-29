@@ -28,7 +28,7 @@ export function isMetaProfile(value: unknown): value is MetaProfile {
   const rankRecord = ranks as Record<string, unknown>;
   return profile.version === 1
     && integerWithin(profile.shards, 0, 1_000_000_000)
-    && integerWithin(profile.bestDepth, 0, 6)
+    && integerWithin(profile.bestDepth, 0, 9)
     && integerWithin(profile.runs, 0, 1_000_000_000)
     && ['vitality', 'might', 'wisdom'].every((key) => integerWithin(rankRecord[key], 0, 5))
     && Array.isArray(profile.claimedRunIds)

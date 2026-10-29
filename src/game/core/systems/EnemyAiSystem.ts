@@ -1,6 +1,7 @@
 import type { ProjectileSystem } from '@/game/core/combat/ProjectileSystem';
 import { AttackController } from '@/game/core/combat/AttackController';
 import { Enemy } from '@/game/core/characters/Enemy';
+import type { NavigationGrid } from '@/game/core/navigation/NavigationGrid';
 import type { AttackPayload, PlayerState, Vector2 } from '@/shared/types/game';
 
 /**
@@ -15,6 +16,7 @@ export class EnemyAiSystem {
     deltaMs: number;
     projectiles?: ProjectileSystem;
     resolvePosition: (nextPosition: Vector2, radius: number) => Vector2;
+    navigation?: NavigationGrid;
   }) {
     const enemyHits: AttackPayload[] = [];
 
@@ -42,6 +44,10 @@ export class EnemyAiSystem {
           }
         },
         resolvePosition: params.resolvePosition,
+        navigation: params.navigation ? {
+          waypoint: params.navigation.getWaypoint(enemy.position, params.player.position, enemy.radius),
+          hasLineOfSight: params.navigation.hasLineOfSight(enemy.position, params.player.position),
+        } : undefined,
       });
     }
 

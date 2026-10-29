@@ -27,7 +27,7 @@ function clearLevel(run) {
   assert.equal(run.getPhase(), 'reward', 'all configured waves must lead to a reward');
 }
 
-test('all six stages preserve one run, award every level, and end in victory once', async () => {
+test('all campaign stages preserve one run, award every level, and end in victory once', async () => {
   const { run, meta } = fixture();
   await run.startRun();
   const runId = run.getState().world.runSession.runId;
@@ -48,9 +48,9 @@ test('all six stages preserve one run, award every level, and end in victory onc
   const won = run.getState();
   assert.equal(won.phase, 'won');
   assert.equal(won.world.runResult.outcome, 'victory');
-  assert.equal(won.build.inventory.length, 6);
+  assert.equal(won.build.inventory.length, CAMPAIGN.length);
   assert.ok(won.build.level > 1, 'kills and level completion grant XP');
-  assert.equal(meta.getState().shards, 36);
+  assert.equal(meta.getState().shards, CAMPAIGN.length * 4 + 12);
   assert.equal(meta.getState().runs, 1);
   run.update(100, idle);
   run.returnToMenu();

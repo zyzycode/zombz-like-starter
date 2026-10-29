@@ -23,7 +23,7 @@ export class MetaProgression {
   award(runId: string, clearedLevels: number, victory: boolean): boolean {
     if (!runId || runId.length > 128 || this.profile.claimedRunIds.includes(runId)) return false;
     if (!Number.isFinite(clearedLevels)) return false;
-    const depth = Math.max(0, Math.min(6, Math.floor(clearedLevels)));
+    const depth = Math.max(0, Math.min(9, Math.floor(clearedLevels)));
     this.profile.shards += depth * 4 + (victory ? 12 : 0);
     this.profile.bestDepth = Math.max(this.profile.bestDepth, depth);
     this.profile.runs += 1;

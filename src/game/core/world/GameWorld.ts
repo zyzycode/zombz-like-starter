@@ -1,4 +1,6 @@
 import { ObeliskSystem } from '@/game/core/environment/ObeliskSystem';
+import { NavigationGrid } from '@/game/core/navigation/NavigationGrid';
+import { CombatResolver } from '@/game/core/combat/CombatResolver';
 import { CacheSystem } from '@/game/core/environment/CacheSystem';
 import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
 import { RestorationSystem } from '@/game/core/environment/RestorationSystem';
@@ -39,7 +41,8 @@ export class GameWorld {
   private clearedWaves = 0;
   private defeatedElites = 0;
   private readonly totalElites: number;
-  private readonly abilities = new AbilitySystem();
+  private readonly abilities: AbilitySystem;
+  private readonly navigation: NavigationGrid;
   private readonly obelisks: ObeliskSystem;
   private readonly caches: CacheSystem;
   private openedCaches: string[] = [];
@@ -66,7 +69,7 @@ export class GameWorld {
   private cameraShakePulse = 0;
   private cameraShakeMs = 0;
   private cameraShakeIntensity = 0;
-  private readonly combatSystem = new CombatSystem();
+  private readonly combatSystem: CombatSystem;
   private readonly enemyAiSystem = new EnemyAiSystem();
   private readonly cleanupSystem = new CleanupSystem();
   private readonly collisionSystem = new CollisionSystem();
@@ -100,6 +103,14 @@ export class GameWorld {
     this.map = builtLevel.map;
     this.levelId = builtLevel.level.id;
     this.collisionGrid = builtLevel.collisionGrid;
+    this.navigation = new NavigationGrid({ width: this.map.width, height: this.map.height,
+      resolvePosition: (position, radius) => this.collisionSystem.resolveCharacterCollision({
+        position, radius, collisionGrid: this.collisionGrid, destructibles: [], resourceNodes: [],
+      }),
+    });
+    const resolver = new CombatResolver(this.navigation.hasLineOfSight);
+    this.combatSystem = new CombatSystem(undefined, resolver);
+    this.abilities = new AbilitySystem(resolver);
     this.spatialGrid = builtLevel.spatialGrid;
     this.enemySpawnPoints = builtLevel.enemySpawnPoints;
     this.player = new Player(state.player);
@@ -220,6 +231,7 @@ export class GameWorld {
       player: this.player.toState(),
       map: this.map,
       spawnPoints: this.enemySpawnPoints,
+      resolvePosition: this.resolveCharacterCollision,
     });
     this.enemies = waveResult.enemies;
     this.currentWaveIndex = waveResult.currentWaveIndex;
@@ -238,6 +250,7 @@ export class GameWorld {
 
     this.abilities.update({ player: this.player, input, enemies: this.enemies, projectiles: this.projectiles });
     const enemyHits = this.enemyAiSystem.update({
+      navigation: this.navigation,
       projectiles: this.projectiles,
       enemies: this.enemies,
       player: this.player.toState(),

@@ -29,7 +29,7 @@ test('route content offers one fork, bounds stage IDs to their depth, and builds
   assert.deepEqual(getRouteChoices(2).map(stage => stage.id), ['grove-2', 'grove-alt']);
   assert.equal(resolveCampaignStage(2).id, 'grove-2');
   assert.equal(resolveCampaignStage(3, 'grove-alt'), undefined);
-  assert.deepEqual(getRouteChoices(7), []);
+  assert.deepEqual(getRouteChoices(CAMPAIGN.length + 1), []);
   const session = new RunSession({ playerClassId: 'wanderer' });
   const main = await createCampaignLevel(2, session);
   const alternate = await createCampaignLevel(2, session, undefined, 'grove-alt');
@@ -54,7 +54,7 @@ for (const destination of [CAMPAIGN[1], GROVE_ALTERNATE]) {
     const next = run.getState();
     assert.equal(next.phase, 'playing');
     assert.equal(next.depth, 2);
-    assert.equal(next.totalLevels, 6);
+    assert.equal(next.totalLevels, CAMPAIGN.length);
     assert.equal(next.stage.name, destination.name);
     assert.equal(run.getBuiltLevel().level.id, destination.id);
     assert.equal(next.world.runSession.runId, before.world.runSession.runId);

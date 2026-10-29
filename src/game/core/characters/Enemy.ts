@@ -28,6 +28,7 @@ export class Enemy extends Character {
     attackController: AttackController;
     onHit: (attack: AttackPayload) => void;
     resolvePosition: (nextPosition: Vector2, radius: number) => Vector2;
+    navigation?: { waypoint: Vector2 | null; hasLineOfSight: boolean };
   }) {
     const wasStunned = this.stunRemainingMs > 0;
     this.updateCombatReaction(params.deltaMs, params.resolvePosition);
@@ -46,25 +47,33 @@ export class Enemy extends Character {
     const dy = params.player.position.y - this.position.y;
     const distanceToPlayer = Math.hypot(dx, dy);
     const shouldChase = distanceToPlayer <= params.chaseRange;
+    const visible = params.navigation?.hasLineOfSight ?? true;
     if (!this.attack.runtime.isActive && (dx !== 0 || dy !== 0)) this.faceTowards(dx, dy);
     const attackUpdate = params.attackController.update(
       this,
       params.deltaMs,
-      distanceToPlayer <= params.attackDistance,
+      visible && distanceToPlayer <= params.attackDistance,
     );
 
-    if (attackUpdate.hit) {
+    if (attackUpdate.hit && visible) {
       params.onHit(attackUpdate.hit);
     }
 
     const ranged = this.archetype.aiProfile.kind === 'ranged' ? this.archetype.aiProfile : null;
-    const retreat = ranged && distanceToPlayer < ranged.preferredRange * 0.7;
-    const approach = distanceToPlayer > (ranged?.preferredRange ?? params.attackDistance);
+    const retreat = visible && ranged && distanceToPlayer < ranged.preferredRange * 0.7;
+    const approach = !visible || distanceToPlayer > (ranged?.preferredRange ?? params.attackDistance);
     const shouldMove = shouldChase && !attackUpdate.isAttacking && (retreat || approach);
     const sign = retreat ? -1 : 1;
-    const directIntent = shouldMove && distanceToPlayer > 0
+    let directIntent = shouldMove && distanceToPlayer > 0
       ? { x: dx / distanceToPlayer * sign, y: dy / distanceToPlayer * sign }
       : { x: 0, y: 0 };
+    if (params.navigation && shouldMove && !retreat) {
+      const waypoint = params.navigation.waypoint;
+      const nx = waypoint ? waypoint.x - this.position.x : 0;
+      const ny = waypoint ? waypoint.y - this.position.y : 0;
+      const length = Math.hypot(nx, ny);
+      directIntent = length > 1 ? { x: nx / length, y: ny / length } : { x: 0, y: 0 };
+    }
     const movementIntent = steerAroundCollision({
       position: this.position, intent: directIntent, radius: this.radius,
       preferredSide: this.detourSide, resolvePosition: params.resolvePosition,

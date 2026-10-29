@@ -6,7 +6,7 @@ import type { Enemy } from '@/game/core/characters/Enemy';
 import type { InputState } from '@/shared/types/game';
 
 export class AbilitySystem {
-  private readonly resolver = new CombatResolver();
+  constructor(private readonly resolver = new CombatResolver()) {}
 
   update(params: { player: Player; input: InputState; enemies: Enemy[]; projectiles: ProjectileSystem }) {
     const { player, input, projectiles } = params;

@@ -15,6 +15,7 @@ export type ResolveAttackResult = {
  * Не знает про input, state machine и update loop.
  */
 export class CombatResolver {
+  constructor(private readonly hasLineOfSight?: (origin: Vector2, target: Vector2) => boolean) {}
   resolveAttack<TTarget extends Damageable>(attack: AttackPayload, targets: TTarget[]): ResolveAttackResult {
     const resolvedAttack = this.applyModifiers(attack);
     const attackDirection = directionToVector(resolvedAttack.direction);
@@ -38,6 +39,7 @@ export class CombatResolver {
         continue;
       }
 
+      if (this.hasLineOfSight && !this.hasLineOfSight(resolvedAttack.origin, target.position)) continue;
       target.applyDamage(resolvedAttack.damage, resolvedAttack.damageType);
       target.applyKnockback?.(scaleVector(attackDirection, resolvedAttack.knockback));
       if (target.isAlive) {
