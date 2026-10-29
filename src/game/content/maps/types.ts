@@ -1,4 +1,5 @@
 import type { ResourceNodeType, Vector2 } from '@/shared/types/game';
+import type { RestorationSiteDefinition } from '@/game/core/environment/RestorationSite';
 
 export type MapRect = {
   x: number;
@@ -20,11 +21,12 @@ export type MapMarkerDefinition = {
 
 export type MapPropDefinition = {
   id: string;
-  kind: 'pillar' | 'crate_stack' | 'scrap_heap';
+  kind: 'pillar' | 'crate_stack' | 'scrap_heap' | 'tree' | 'ruin' | 'foliage';
   position: Vector2;
   radius: number;
   width: number;
   height: number;
+  visual?: { textureKey: string; frame: number; scale?: number; ground?: boolean };
 };
 
 export type CollisionShapeDefinition =
@@ -95,5 +97,6 @@ export type MapDefinition = {
   tileLayers: TileLayerDefinition[];
   markers: MapMarkerDefinition[];
   props: MapPropDefinition[];
+  restorationSites?: RestorationSiteDefinition[];
   collision: CollisionShapeDefinition[];
 };

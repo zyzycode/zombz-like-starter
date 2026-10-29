@@ -1,4 +1,5 @@
 import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
+import { RestorationSystem } from '@/game/core/environment/RestorationSystem';
 import { ProjectileSystem } from '@/game/core/combat/ProjectileSystem';
 import type { Stats } from '@/game/core/progression/types';
 import { Player } from '@/game/core/characters/Player';
@@ -34,6 +35,7 @@ export class GameWorld {
   private status: 'active' | 'cleared' | 'dead' = 'active';
   private clearedWaves = 0;
   private readonly abilities = new AbilitySystem();
+  private readonly restoration: RestorationSystem;
   private readonly projectiles = new ProjectileSystem();
   private readonly levelId: string;
   private readonly map: MapDefinition;
@@ -78,6 +80,7 @@ export class GameWorld {
     this.mode = params.mode ?? 'extraction';
     const { builtLevel } = params;
     const state = builtLevel.initialState;
+    this.restoration = new RestorationSystem(state.restorationSites ?? []);
 
     this.map = builtLevel.map;
     this.levelId = builtLevel.level.id;
@@ -108,6 +111,7 @@ export class GameWorld {
     return structuredClone({
       status: this.status,
       projectiles: this.projectiles.getState(),
+      restorationSites: this.restoration.getState(),
       refs: {
         mapId: this.map.id,
         levelId: this.levelId,
@@ -228,6 +232,7 @@ export class GameWorld {
       interactables: [...this.resourceNodes],
     });
     this.droppedResources = interactionResult.droppedResources;
+    this.restoration.update(this.player, input);
 
     const cleanupResult = this.cleanupSystem.cleanup({
       enemies: this.enemies,

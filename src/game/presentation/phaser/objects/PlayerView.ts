@@ -24,7 +24,7 @@ export class PlayerView {
   /** Обновляет позицию и кратковременный индикатор атаки. */
   render(player: PlayerState, deltaMs: number) {
     // Логическая позиция персонажа считается точкой у ног, поэтому спрайт рисуем чуть выше.
-    this.body.setPosition(player.position.x, player.position.y - PLAYER_SPRITE_FEET_OFFSET_Y);
+    this.body.setPosition(player.position.x, player.position.y - PLAYER_SPRITE_FEET_OFFSET_Y).setDepth(100 + player.position.y);
 
     const requestedAnimation = buildAnimationName(player.state, player.direction);
     const fallbackAnimation = buildAnimationName(player.state === 'walk' ? 'walk' : 'idle', player.direction);

@@ -12,7 +12,7 @@ export class CombatEffectsRenderer {
 
   constructor(scene: Phaser.Scene) {
     this.ground = scene.add.graphics().setDepth(5);
-    this.air = scene.add.graphics().setDepth(14);
+    this.air = scene.add.graphics().setDepth(1800);
   }
 
   render(state: WorldState, deltaMs: number) {

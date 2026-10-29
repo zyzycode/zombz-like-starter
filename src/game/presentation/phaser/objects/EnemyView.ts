@@ -38,16 +38,16 @@ export class EnemyView {
       let graphics = this.items.get(enemy.id);
       if (!graphics) {
         const body = this.scene.add.sprite(enemy.position.x, enemy.position.y, enemyAnimationLibrary.sheets.enemyIdle.key, 0).setDepth(8);
-        const hpBarBg = this.scene.add.rectangle(0, 0, barWidth + 4, boss ? 10 : 6, 0x111827).setDepth(15);
-        const hpBar = this.scene.add.rectangle(0, 0, barWidth, boss ? 6 : 4, boss ? 0xff628a : 0xef7d72).setOrigin(0, 0.5).setDepth(16);
+        const hpBarBg = this.scene.add.rectangle(0, 0, barWidth + 4, boss ? 10 : 6, 0x111827).setDepth(2000);
+        const hpBar = this.scene.add.rectangle(0, 0, barWidth, boss ? 6 : 4, boss ? 0xff628a : 0xef7d72).setOrigin(0, 0.5).setDepth(2001);
         const label = boss ? this.scene.add.text(0, 0, 'СТРАЖ РАЗЛОМА', {
           fontFamily: 'system-ui, sans-serif', fontSize: '11px', color: '#ffe2ea',
           stroke: '#1c1121', strokeThickness: 3,
-        }).setOrigin(0.5, 1).setDepth(16) : null;
+        }).setOrigin(0.5, 1).setDepth(2001) : null;
         graphics = { body, hpBarBg, hpBar, label, animator: createAnimatorFromConfig(this.scene, enemyAnimationLibrary) };
         this.items.set(enemy.id, graphics);
       }
-      graphics.body.setPosition(enemy.position.x, enemy.position.y - 10 * appearance.scale).setScale(appearance.scale);
+      graphics.body.setPosition(enemy.position.x, enemy.position.y - 10 * appearance.scale).setScale(appearance.scale).setDepth(100 + enemy.position.y);
       const requested = buildAnimationName(enemy.state, enemy.direction);
       graphics.animator.play(graphics.animator.has(requested) ? requested : buildAnimationName('idle', enemy.direction));
       graphics.animator.update(deltaMs);

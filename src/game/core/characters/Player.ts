@@ -35,6 +35,16 @@ export class Player extends Character {
 
   getAbilities(): AbilityState { return { ...this.abilities }; }
 
+  restoreResources(healthFraction: number, manaFraction: number): boolean {
+    if (!this.isAlive) return false;
+    const hp = Math.min(this.maxHp, this.hp + this.maxHp * Math.max(0, healthFraction));
+    const mana = Math.min(this.abilities.maxMana, this.abilities.mana + this.abilities.maxMana * Math.max(0, manaFraction));
+    const restored = hp > this.hp || mana > this.abilities.mana;
+    this.hp = hp;
+    this.abilities.mana = mana;
+    return restored;
+  }
+
   cast(spell: 'firebolt' | 'nova'): boolean {
     if (!this.isAlive || this.abilities.dodgeRemainingMs > 0) return false;
     const key = spell === 'firebolt' ? 'fireboltCooldownMs' : 'novaCooldownMs';
