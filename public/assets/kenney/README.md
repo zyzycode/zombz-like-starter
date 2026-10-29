@@ -21,5 +21,5 @@ is unchanged (12 columns). `tiny-town-frost-32.png` and
 greens and warm earth colors were mapped to snow/ice colors before scaling.
 These are adapted existing artwork, not newly drawn art.
 
-The project still uses its previous character animation sheets. The Kenney
-character tiles are static and do not replace their movement/attack animations.
+Kenney character tiles are static and are not used for movement/attack animations.
+The hero uses the separately licensed Legend pack; enemies retain their previous sheets.

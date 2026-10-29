@@ -1,298 +1,77 @@
 import type { AnimationClipConfig } from '@/game/animation/AnimationClip';
 import type { AnimationLibraryConfig } from '@/game/animation/createAnimatorFromConfig';
+import type { CharacterState, Direction } from '@/shared/types/game';
 
-function frameRange(row: number, from: number, count: number) {
-  return Array.from({ length: count }, (_, index) => ({
-    row,
-    column: from + index,
-  }));
+const directions: Direction[] = ['down', 'left', 'right', 'up'];
+
+function frames(row: number, count: number) {
+  return Array.from({ length: count }, (_, column) => ({ row, column }));
 }
 
-const heroWalkSheet = {
-  key: 'hero_walk_sheet',
-  path: '/assets/walk1.png',
+const heroRows = {
+  down: { idle: 1, walk: 3, attack: 7, cast: 19, death: 24 },
+  left: { idle: 27, walk: 29, attack: 33, cast: 45, death: 50 },
+  right: { idle: 27, walk: 29, attack: 33, cast: 45, death: 50 },
+  up: { idle: 52, walk: 54, attack: 58, cast: 70, death: 75 },
+} satisfies Record<Direction, Record<'idle' | 'walk' | 'attack' | 'cast' | 'death', number>>;
+
+export const HERO_SHEET_COLUMNS = 21;
+export const heroSheet = {
+  key: 'hero_legend_sheet',
+  path: '/assets/hero-legend/green.png',
   frameWidth: 64,
   frameHeight: 64,
-} as const;
-
-const heroIdleSheet = {
-  key: 'hero_idle_sheet',
-  path: '/assets/idle.png',
-  frameWidth: 64,
-  frameHeight: 64,
-} as const;
-
-const heroSlashSheet = {
-  key: 'hero_slash_sheet',
-  path: '/assets/1h_slash.png',
-  frameWidth: 64,
-  frameHeight: 64,
-} as const;
-
-const enemyIdleSheet = {
-  key: 'enemy_idle_sheet',
-  path: '/assets/enemy_idle.png',
-  frameWidth: 64,
-  frameHeight: 64,
-} as const;
-
-const enemyWalkSheet = {
-  key: 'enemy_walk_sheet',
-  path: '/assets/enemy_walk.png',
-  frameWidth: 64,
-  frameHeight: 64,
-} as const;
-
-const enemyHurtSheet = {
-  key: 'enemy_hurt_sheet',
-  path: '/assets/enemy_hurt.png',
-  frameWidth: 64,
-  frameHeight: 64,
-} as const;
-
-const enemySlashSheet = {
-  key: 'enemy_slash_sheet',
-  path: '/assets/enemy_1h_slash.png',
-  frameWidth: 64,
-  frameHeight: 64,
-} as const;
-
-const playerClips: AnimationClipConfig[] = [
-  {
-    name: 'idle_down',
-    sheetId: 'heroIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(2, 0, 2),
-  },
-  {
-    name: 'idle_left',
-    sheetId: 'heroIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(1, 0, 2),
-  },
-  {
-    name: 'idle_right',
-    sheetId: 'heroIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(3, 0, 2),
-  },
-  {
-    name: 'idle_up',
-    sheetId: 'heroIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(0, 0, 2),
-  },
-  {
-    name: 'walk_down',
-    sheetId: 'heroWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(2, 0, 9),
-  },
-  {
-    name: 'walk_left',
-    sheetId: 'heroWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(1, 0, 9),
-  },
-  {
-    name: 'walk_right',
-    sheetId: 'heroWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(3, 0, 9),
-  },
-  {
-    name: 'walk_up',
-    sheetId: 'heroWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(0, 0, 9),
-  },
-  {
-    name: 'attack_down',
-    sheetId: 'heroSlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(2, 0, 13),
-  },
-  {
-    name: 'attack_left',
-    sheetId: 'heroSlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(1, 0, 13),
-  },
-  {
-    name: 'attack_right',
-    sheetId: 'heroSlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(3, 0, 13),
-  },
-  {
-    name: 'attack_up',
-    sheetId: 'heroSlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(0, 0, 13),
-  },
-];
-
-const enemyClips: AnimationClipConfig[] = [
-  {
-    name: 'idle_down',
-    sheetId: 'enemyIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(2, 0, 2),
-  },
-  {
-    name: 'idle_left',
-    sheetId: 'enemyIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(1, 0, 2),
-  },
-  {
-    name: 'idle_right',
-    sheetId: 'enemyIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(3, 0, 2),
-  },
-  {
-    name: 'idle_up',
-    sheetId: 'enemyIdle',
-    fps: 2,
-    loop: true,
-    frames: frameRange(0, 0, 2),
-  },
-  {
-    name: 'walk_down',
-    sheetId: 'enemyWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(2, 0, 9),
-  },
-  {
-    name: 'walk_left',
-    sheetId: 'enemyWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(1, 0, 9),
-  },
-  {
-    name: 'walk_right',
-    sheetId: 'enemyWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(3, 0, 9),
-  },
-  {
-    name: 'walk_up',
-    sheetId: 'enemyWalk',
-    fps: 10,
-    loop: true,
-    frames: frameRange(0, 0, 9),
-  },
-  {
-    name: 'hurt_down',
-    sheetId: 'enemyHurt',
-    fps: 18,
-    loop: false,
-    frames: frameRange(0, 0, 6),
-  },
-  {
-    name: 'hurt_left',
-    sheetId: 'enemyHurt',
-    fps: 18,
-    loop: false,
-    frames: frameRange(0, 0, 6),
-  },
-  {
-    name: 'hurt_right',
-    sheetId: 'enemyHurt',
-    fps: 18,
-    loop: false,
-    frames: frameRange(0, 0, 6),
-  },
-  {
-    name: 'hurt_up',
-    sheetId: 'enemyHurt',
-    fps: 18,
-    loop: false,
-    frames: frameRange(0, 0, 6),
-  },
-  {
-    name: 'attack_down',
-    sheetId: 'enemySlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(2, 0, 13),
-  },
-  {
-    name: 'attack_left',
-    sheetId: 'enemySlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(1, 0, 13),
-  },
-  {
-    name: 'attack_right',
-    sheetId: 'enemySlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(3, 0, 13),
-  },
-  {
-    name: 'attack_up',
-    sheetId: 'enemySlash',
-    fps: 29,
-    loop: false,
-    frames: frameRange(0, 0, 13),
-  },
-];
-
-export const characterAnimationLibrary: AnimationLibraryConfig = {
-  sheets: {
-    heroWalk: heroWalkSheet,
-    heroIdle: heroIdleSheet,
-    heroSlash: heroSlashSheet,
-  },
-  clips: playerClips,
 };
+
+/** Side-facing source frames point right; PlayerView mirrors them when facing left. */
+export function heroAttackFrame(direction: Direction, column: number) {
+  return heroRows[direction].attack * HERO_SHEET_COLUMNS + column;
+}
+
+function heroClip(direction: Direction, state: CharacterState): AnimationClipConfig {
+  const rows = heroRows[direction];
+  const row = state === 'hurt' ? rows.death : rows[state];
+  const count = state === 'walk' ? 8 : state === 'hurt' ? 3
+    : state === 'death' ? direction === 'down' ? 21 : direction === 'up' ? 19 : 12 : 4;
+  return {
+    name: `${state}_${direction}`,
+    sheetId: 'hero',
+    fps: state === 'idle' ? 5 : state === 'walk' ? 12 : state === 'hurt' ? 25 : 12,
+    loop: state === 'idle' || state === 'walk',
+    frames: frames(row, count),
+  };
+}
+
+const heroStates: CharacterState[] = ['idle', 'walk', 'attack', 'cast', 'hurt', 'death'];
+export const characterAnimationLibrary: AnimationLibraryConfig = {
+  sheets: { hero: heroSheet },
+  clips: directions.flatMap((direction) => heroStates.map((state) => heroClip(direction, state))),
+};
+
+// Preserve the existing enemy artwork and playback timings.
+function enemySheet(key: string, path: string) {
+  return { key, path, frameWidth: 64, frameHeight: 64 };
+}
+
+const enemyRows = { down: 2, left: 1, right: 3, up: 0 };
+function enemyClip(direction: Direction, state: 'idle' | 'walk' | 'attack' | 'hurt'): AnimationClipConfig {
+  const sheetId = { idle: 'enemyIdle', walk: 'enemyWalk', attack: 'enemySlash', hurt: 'enemyHurt' }[state];
+  const count = { idle: 2, walk: 9, attack: 13, hurt: 6 }[state];
+  const fps = { idle: 2, walk: 10, attack: 29, hurt: 18 }[state];
+  return {
+    name: `${state}_${direction}`, sheetId, fps,
+    loop: state === 'idle' || state === 'walk',
+    frames: frames(state === 'hurt' ? 0 : enemyRows[direction], count),
+  };
+}
 
 export const enemyAnimationLibrary: AnimationLibraryConfig = {
   sheets: {
-    enemyIdle: enemyIdleSheet,
-    enemyWalk: enemyWalkSheet,
-    enemyHurt: enemyHurtSheet,
-    enemySlash: enemySlashSheet,
+    enemyIdle: enemySheet('enemy_idle_sheet', '/assets/enemy_idle.png'),
+    enemyWalk: enemySheet('enemy_walk_sheet', '/assets/enemy_walk.png'),
+    enemyHurt: enemySheet('enemy_hurt_sheet', '/assets/enemy_hurt.png'),
+    enemySlash: enemySheet('enemy_slash_sheet', '/assets/enemy_1h_slash.png'),
   },
-  clips: enemyClips,
-};
-
-/**
- * Альтернативный способ задавать кадры без row + frameCount:
- * например для attack/hurt, если кадры идут не подряд.
- */
-export const explicitFrameExamples = {
-  walk_down_custom: {
-    name: 'walk_down',
-    sheetId: 'heroWalk',
-    fps: 10,
-    loop: true,
-    frames: [
-      { row: 0, column: 0 },
-      { row: 0, column: 1 },
-      { row: 0, column: 2 },
-      { row: 0, column: 3 },
-    ],
-  },
+  clips: directions.flatMap((direction) =>
+    (['idle', 'walk', 'hurt', 'attack'] as const).map((state) => enemyClip(direction, state))),
 };
