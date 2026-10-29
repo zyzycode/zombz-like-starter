@@ -58,7 +58,10 @@ export type AttackModifier = {
   radiusBonus?: number;
 };
 
+export type StatusEffect = { kind: 'stun'; durationMs: number };
+
 export type AttackPayload = {
+  statusEffects?: StatusEffect[];
   sourceId: string;
   type: AttackType;
   damageType: DamageType;
@@ -98,6 +101,7 @@ export type CombatTarget = {
 };
 
 export type CharacterRuntime = {
+  stunRemainingMs?: number;
   id: string;
   position: Vector2;
   speed: number;
@@ -129,6 +133,9 @@ export type AbilityState = {
   dodgeCooldownMs: number;
   dodgeRemainingMs: number;
   novaPulse: number;
+  shieldBashCooldownMs: number;
+  shieldBashPulse: number;
+  shieldBashDirection: Direction;
 };
 
 export type ProjectileState = {
@@ -196,6 +203,7 @@ export type InputState = {
   interactPressed: boolean;
   fireboltPressed?: boolean;
   novaPressed?: boolean;
+  shieldBashPressed?: boolean;
   dodgePressed?: boolean;
   aim: Vector2;
 };

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { WorldState } from '@/game/core/world/WorldState';
-import type { EnemyState, Vector2 } from '@/shared/types/game';
+import type { Direction, EnemyState, Vector2 } from '@/shared/types/game';
 import { drawAttackShape } from '@/game/presentation/phaser/renderer/drawAttackShape';
 
 /** Reuses two graphics buffers for telegraphs, missiles and short spell effects. */
@@ -9,6 +9,10 @@ export class CombatEffectsRenderer {
   private readonly air: Phaser.GameObjects.Graphics;
   private lastNovaPulse: number | null = null;
   private novaRemainingMs = 0;
+  private lastShieldBashPulse: number | null = null;
+  private shieldBashRemainingMs = 0;
+  private shieldBashPosition: Vector2 = { x: 0, y: 0 };
+  private shieldBashDirection: Direction = 'down';
   private novaPosition: Vector2 = { x: 0, y: 0 };
 
   constructor(scene: Phaser.Scene) {
@@ -47,6 +51,18 @@ export class CombatEffectsRenderer {
       this.air.strokeCircle(this.novaPosition.x, this.novaPosition.y, radius);
       this.ground.fillStyle(0x69cbff, 0.18 * (1 - progress));
       this.ground.fillCircle(this.novaPosition.x, this.novaPosition.y, 145);
+    }
+    const bashPulse = state.player.abilities?.shieldBashPulse ?? 0;
+    if (this.lastShieldBashPulse !== null && bashPulse !== this.lastShieldBashPulse) {
+      this.shieldBashPosition = { ...state.player.position };
+      this.shieldBashDirection = state.player.abilities?.shieldBashDirection ?? state.player.direction;
+      this.shieldBashRemainingMs = 240;
+    }
+    this.lastShieldBashPulse = bashPulse;
+    if (this.shieldBashRemainingMs > 0) {
+      this.shieldBashRemainingMs = Math.max(0, this.shieldBashRemainingMs - deltaMs);
+      drawAttackShape(this.ground, this.shieldBashPosition, this.shieldBashDirection,
+        { range: 0, radius: 110, arcDegrees: 120 }, 0xffd98a, .3 * this.shieldBashRemainingMs / 240);
     }
     if ((state.player.abilities?.dodgeRemainingMs ?? 0) > 0) {
       this.ground.lineStyle(2, 0x9cfff4, 0.8);

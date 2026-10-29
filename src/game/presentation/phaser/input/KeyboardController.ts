@@ -11,6 +11,7 @@ type MovementKeys = {
   E: Phaser.Input.Keyboard.Key;
   Q: Phaser.Input.Keyboard.Key;
   R: Phaser.Input.Keyboard.Key;
+  F: Phaser.Input.Keyboard.Key;
   SHIFT: Phaser.Input.Keyboard.Key;
 };
 
@@ -20,10 +21,10 @@ export class KeyboardController {
   private pointerWorld = { x: 0, y: 0 };
   private wasAttackDown = false;
   private wasInteractDown = false;
-  private previousAbilities = { Q: false, R: false, SHIFT: false };
+  private previousAbilities = { Q: false, R: false, F: false, SHIFT: false };
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.keys = this.scene.input.keyboard!.addKeys('W,A,S,D,SPACE,E,Q,R,SHIFT') as MovementKeys;
+    this.keys = this.scene.input.keyboard!.addKeys('W,A,S,D,SPACE,E,Q,R,F,SHIFT') as MovementKeys;
 
     this.scene.input.on('pointermove', this.updatePointer);
     this.scene.input.on('pointerdown', this.updatePointer);
@@ -53,8 +54,9 @@ export class KeyboardController {
     this.updatePointer(this.scene.input.activePointer);
     const fireboltPressed = this.keys.Q.isDown && !this.previousAbilities.Q;
     const novaPressed = this.keys.R.isDown && !this.previousAbilities.R;
+    const shieldBashPressed = this.keys.F.isDown && !this.previousAbilities.F;
     const dodgePressed = this.keys.SHIFT.isDown && !this.previousAbilities.SHIFT;
-    this.previousAbilities = { Q: this.keys.Q.isDown, R: this.keys.R.isDown, SHIFT: this.keys.SHIFT.isDown };
+    this.previousAbilities = { Q: this.keys.Q.isDown, R: this.keys.R.isDown, F: this.keys.F.isDown, SHIFT: this.keys.SHIFT.isDown };
 
     // Объединяем клавиатуру и мышь в один объект, независимый от Phaser API.
     return {
@@ -67,6 +69,7 @@ export class KeyboardController {
       interactPressed,
       fireboltPressed,
       novaPressed,
+      shieldBashPressed,
       dodgePressed,
       aim: this.pointerWorld,
     };

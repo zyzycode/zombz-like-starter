@@ -1,7 +1,13 @@
 import { Character } from '@/game/core/characters/Character';
 import type { AttackController } from '@/game/core/combat/AttackController';
 import type { Stats } from '@/game/core/progression/types';
-import type { AbilityState, AttackPayload, DamageType, InputState, PlayerState, Vector2 } from '@/shared/types/game';
+import type { StatusEffect, AbilityState, AttackPayload, DamageType, InputState, PlayerState, Vector2 } from '@/shared/types/game';
+
+const SPELLS = {
+  firebolt: { cooldownKey: 'fireboltCooldownMs', cost: 20, cooldownMs: 550 },
+  nova: { cooldownKey: 'novaCooldownMs', cost: 40, cooldownMs: 4500 },
+  shieldBash: { cooldownKey: 'shieldBashCooldownMs', cost: 25, cooldownMs: 6000 },
+} as const;
 
 /** Character simulation owns movement, damage defence and ability resources. */
 export class Player extends Character {
@@ -15,6 +21,7 @@ export class Player extends Character {
     super(state);
     this.abilities = state.abilities ? { ...state.abilities } : {
       mana: 100, maxMana: 100, fireboltCooldownMs: 0, novaCooldownMs: 0,
+      shieldBashCooldownMs: 0, shieldBashPulse: 0, shieldBashDirection: state.direction,
       dodgeCooldownMs: 0, dodgeRemainingMs: 0, novaPulse: 0,
     };
   }
@@ -45,13 +52,13 @@ export class Player extends Character {
     return restored;
   }
 
-  cast(spell: 'firebolt' | 'nova'): boolean {
-    if (!this.isAlive || this.abilities.dodgeRemainingMs > 0) return false;
-    const key = spell === 'firebolt' ? 'fireboltCooldownMs' : 'novaCooldownMs';
-    const cost = spell === 'firebolt' ? 20 : 40;
+  cast(spell: keyof typeof SPELLS): boolean {
+    if (!this.isAlive || this.stunRemainingMs > 0 || this.abilities.dodgeRemainingMs > 0) return false;
+    const { cooldownKey: key, cost, cooldownMs } = SPELLS[spell];
     if (this.abilities[key] > 0 || this.abilities.mana < cost) return false;
     this.abilities.mana -= cost;
-    this.abilities[key] = spell === 'firebolt' ? 550 : 4500;
+    this.abilities[key] = cooldownMs;
+    if (spell === 'shieldBash') this.abilities.shieldBashPulse += 1;
     if (spell === 'nova') this.abilities.novaPulse += 1;
     return true;
   }
@@ -64,9 +71,11 @@ export class Player extends Character {
     resolvePosition: (nextPosition: Vector2, radius: number) => Vector2;
   }) {
     const { deltaMs, input } = params;
+    const wasStunned = this.stunRemainingMs > 0;
     this.tickAbilities(deltaMs);
     this.updateCombatReaction(deltaMs, params.resolvePosition);
     if (!this.isAlive) { this.state = 'death'; return; }
+    if (wasStunned) { this.state = 'hurt'; return; }
 
     const x = Number(input.right) - Number(input.left);
     const y = Number(input.down) - Number(input.up);
@@ -91,7 +100,7 @@ export class Player extends Character {
     if (!this.attack.runtime.isActive) {
       const aimX = input.aim.x - this.position.x;
       const aimY = input.aim.y - this.position.y;
-      const aiming = input.attackPressed || input.attackHeld || input.fireboltPressed || input.novaPressed;
+      const aiming = input.attackPressed || input.attackHeld || input.fireboltPressed || input.novaPressed || input.shieldBashPressed;
       if (isMoving && !aiming) this.faceTowards(x, y);
       else if (aimX || aimY) this.faceTowards(aimX, aimY);
       else if (isMoving) this.faceTowards(x, y);
@@ -100,6 +109,12 @@ export class Player extends Character {
     this.move(movement, deltaMs, attackUpdate.movementMultiplier, params.resolvePosition);
     if (attackUpdate.hit) params.onHit(attackUpdate.hit);
     this.state = attackUpdate.isAttacking ? 'attack' : isMoving ? 'walk' : 'idle';
+  }
+
+  setShieldBashDirection(direction: PlayerState['direction']) { this.abilities.shieldBashDirection = direction; }
+
+  override applyStatus(effect: StatusEffect) {
+    if (this.abilities.dodgeRemainingMs === 0) super.applyStatus(effect);
   }
 
   override applyDamage(amount: number, damageType: DamageType) {
@@ -112,6 +127,7 @@ export class Player extends Character {
   }
 
   applyResolvedState(state: PlayerState) {
+    this.stunRemainingMs = state.stunRemainingMs ?? 0;
     this.hp = state.hp;
     this.maxHp = state.maxHp;
     this.hurtTimerMs = state.hurtTimerMs;
@@ -123,7 +139,7 @@ export class Player extends Character {
 
   private tickAbilities(deltaMs: number) {
     this.abilities.mana = Math.min(this.abilities.maxMana, this.abilities.mana + this.manaRegen * deltaMs / 1000);
-    for (const key of ['fireboltCooldownMs', 'novaCooldownMs', 'dodgeCooldownMs', 'dodgeRemainingMs'] as const) {
+    for (const key of ['shieldBashCooldownMs', 'fireboltCooldownMs', 'novaCooldownMs', 'dodgeCooldownMs', 'dodgeRemainingMs'] as const) {
       this.abilities[key] = Math.max(0, this.abilities[key] - deltaMs);
     }
   }

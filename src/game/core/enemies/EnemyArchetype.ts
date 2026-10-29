@@ -36,6 +36,7 @@ export type EnemyAiProfile =
     };
 
 export type EnemyArchetype = {
+  stunDurationMultiplier?: number;
   id: string;
   name: string;
   baseStats: EnemyBaseStats;

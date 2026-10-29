@@ -15,8 +15,8 @@ function Meter({ label, value, max, kind }: { label: string; value: number; max:
   </div>;
 }
 
-function Ability({ hotkey, name, cooldown }: { hotkey: string; name: string; cooldown: number }) {
-  return <div className={`ability ${cooldown > 0 ? 'cooling' : ''}`}><kbd>{hotkey}</kbd><span>{name}</span><small>{cooldown > 0 ? `${(cooldown / 1000).toFixed(1)}с` : 'Готово'}</small></div>;
+function Ability({ hotkey, name, cooldown, description }: { hotkey: string; name: string; cooldown: number; description?: string }) {
+  return <div title={description} className={`ability ${cooldown > 0 ? 'cooling' : ''}`}><kbd>{hotkey}</kbd><span>{name}</span><small>{cooldown > 0 ? `${(cooldown / 1000).toFixed(1)}с` : 'Готово'}</small></div>;
 }
 
 export function Hud() {
@@ -38,6 +38,7 @@ export function Hud() {
     <section className="abilities" aria-label="Способности">
       <Ability hotkey="Q" name="Болт" cooldown={abilities?.fireboltCooldownMs ?? 0} />
       <Ability hotkey="R" name="Кольцо" cooldown={abilities?.novaCooldownMs ?? 0} />
+      <Ability hotkey="F" name="Удар щитом" cooldown={abilities?.shieldBashCooldownMs ?? 0} description="25 маны · 6 с · стан 1,4 с (босс: 0,35 с)" />
       <Ability hotkey="⇧" name="Рывок" cooldown={abilities?.dodgeCooldownMs ?? 0} />
     </section>
     {world && <div className="wave-line"><span>Волна {world.wave.currentWaveIndex}/{world.wave.maxWaves}</span><span>{world.wave.activeEnemies > 0 ? `Врагов: ${world.wave.activeEnemies}` : world.wave.nextWaveInMs > 0 ? `Через ${(world.wave.nextWaveInMs / 1000).toFixed(1)}с` : 'Зачищено'}</span></div>}

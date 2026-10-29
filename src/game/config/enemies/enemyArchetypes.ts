@@ -8,6 +8,7 @@ const claw: AttackConfig = {
 };
 function enemy(id: string, hp: number, speed: number, radius: number, attack: Partial<AttackConfig>, aiProfile: EnemyArchetype['aiProfile']): EnemyArchetype {
   return {
+    stunDurationMultiplier: id === 'boss' ? 0.25 : 1,
     id, name: id, baseStats: { hp, hurtDurationMs: 160, hurtFlashDurationMs: 120, mass: radius / 20 },
     moveSpeed: speed, radius, aggroRange: 3000,
     attackDefinitions: [{ id: `${id}-attack`, config: { ...claw, ...attack } }],

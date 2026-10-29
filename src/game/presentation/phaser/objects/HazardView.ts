@@ -4,16 +4,13 @@ import type { ArenaHazardState } from '@/game/core/environment/ArenaHazard';
 /** Draws only the simulation phase, so paused warnings never advance visually. */
 export class HazardView {
   private readonly ground: Phaser.GameObjects.Graphics;
-  private readonly sparks: Phaser.GameObjects.Graphics;
 
   constructor(scene: Phaser.Scene) {
     this.ground = scene.add.graphics().setDepth(4);
-    this.sparks = scene.add.graphics().setDepth(1790);
   }
 
   render(hazards: ArenaHazardState[]) {
     this.ground.clear();
-    this.sparks.clear();
     for (const hazard of hazards) {
       const { x, y } = hazard.position;
       const { radius, phase, phaseElapsedMs } = hazard;
@@ -42,18 +39,12 @@ export class HazardView {
       } else if (phase === 'active') {
         const progress = Math.min(1, phaseElapsedMs / hazard.activeMs);
         g.fillStyle(color, .52).fillCircle(x, y, radius);
-        const air = this.sparks;
-        for (let index = 0; index < 5; index++) {
-          const angle = index * Math.PI * .4 + hazard.pulseIndex;
-          const px = x + Math.cos(angle) * radius * .55;
-          const py = y + Math.sin(angle) * radius * .55;
-          const height = (1 - progress) * 26 + 8;
-          air.fillStyle(color, .85).fillTriangle(px - 6, py + 3, px + 6, py + 3, px, py - height);
-          air.fillStyle(0xffffff, .9).fillCircle(px, py - height, 2);
-        }
+        // A ground pulse marks active damage without upright spike silhouettes.
+        g.lineStyle(4, 0xffffff, .9 - progress * .4);
+        g.strokeCircle(x, y, radius * (.35 + progress * .65));
       }
     }
   }
 
-  destroy() { this.ground.destroy(); this.sparks.destroy(); }
+  destroy() { this.ground.destroy(); }
 }

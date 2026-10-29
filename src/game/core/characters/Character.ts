@@ -1,8 +1,10 @@
+import { AttackController } from '@/game/core/combat/AttackController';
 import { buildAnimationName } from '@/game/animation/animationNames';
 import { directionToVector, vectorToDirection } from '@/game/core/math/directions';
 import type { ActiveAttackRuntime, AttackSource, Damageable } from '@/game/core/contracts/GameplayContracts';
 import type { AnimationName } from '@/shared/types/game';
 import type {
+  StatusEffect,
   AttackOwner,
   CharacterRuntime,
   CharacterState,
@@ -17,6 +19,8 @@ import type {
  * Подходит и для Player, и для Enemy.
  */
 export abstract class Character implements AttackOwner, Damageable, AttackSource {
+  stunRemainingMs = 0;
+  private readonly statusAttackController = new AttackController();
   id: string;
   position: Vector2;
   speed: number;
@@ -36,6 +40,7 @@ export abstract class Character implements AttackOwner, Damageable, AttackSource
   direction: Direction;
 
   constructor(params: CharacterRuntime) {
+    this.stunRemainingMs = params.stunRemainingMs ?? 0;
     this.id = params.id;
     this.position = params.position;
     this.speed = params.speed;
@@ -89,6 +94,7 @@ export abstract class Character implements AttackOwner, Damageable, AttackSource
     deltaMs: number,
     resolvePosition: (nextPosition: Vector2, radius: number) => Vector2,
   ) {
+    this.stunRemainingMs = Math.max(0, this.stunRemainingMs - deltaMs);
     this.hurtTimerMs = Math.max(0, this.hurtTimerMs - deltaMs);
     this.hurtFlashTimerMs = Math.max(0, this.hurtFlashTimerMs - deltaMs);
 
@@ -118,6 +124,7 @@ export abstract class Character implements AttackOwner, Damageable, AttackSource
 
   toRuntime(): CharacterRuntime {
     return {
+      stunRemainingMs: this.stunRemainingMs,
       id: this.id,
       position: { ...this.position },
       speed: this.speed,
@@ -150,6 +157,13 @@ export abstract class Character implements AttackOwner, Damageable, AttackSource
     this.hurtTimerMs = this.hurtDurationMs;
     this.hurtFlashTimerMs = this.hurtFlashDurationMs;
     this.state = this.hp > 0 ? 'hurt' : 'death';
+  }
+
+  applyStatus(effect: StatusEffect) {
+    if (!this.isAlive || !Number.isFinite(effect.durationMs) || effect.durationMs <= 0) return;
+    this.stunRemainingMs = Math.max(this.stunRemainingMs, effect.durationMs);
+    this.statusAttackController.cancel(this);
+    this.state = 'hurt';
   }
 
   applyKnockback(impulse: Vector2) {

@@ -11,6 +11,7 @@ type EnemyGraphics = {
   hpBarBg: Phaser.GameObjects.Rectangle;
   hpBar: Phaser.GameObjects.Rectangle;
   label: Phaser.GameObjects.Text | null;
+  stunLabel: Phaser.GameObjects.Text;
   animator: ReturnType<typeof createAnimatorFromConfig>;
 };
 
@@ -39,7 +40,10 @@ export class EnemyView {
         const label = boss ? this.scene.add.text(0, 0, 'ХРАНИТЕЛЬ РАЗЛОМА', {
           fontFamily: 'system-ui, sans-serif', fontSize: '11px', color: '#ffe2ea', stroke: '#1c1121', strokeThickness: 3,
         }).setOrigin(.5, 1).setDepth(2001) : null;
-        graphics = { body, shadow, hpBarBg, hpBar, label, animator: createAnimatorFromConfig(this.scene, appearance.library) };
+        const stunLabel = this.scene.add.text(0, 0, '', {
+          fontFamily: 'system-ui, sans-serif', fontSize: '11px', color: '#ffe5a1', stroke: '#211c13', strokeThickness: 3,
+        }).setOrigin(.5, 1).setDepth(2002).setVisible(false);
+        graphics = { body, shadow, hpBarBg, hpBar, label, stunLabel, animator: createAnimatorFromConfig(this.scene, appearance.library) };
         this.items.set(enemy.id, graphics);
       }
       graphics.body.setPosition(enemy.position.x, enemy.position.y).setDepth(100 + enemy.position.y);
@@ -55,11 +59,14 @@ export class EnemyView {
       graphics.hpBarBg.setPosition(enemy.position.x, barY).setVisible(showBar);
       graphics.hpBar.setPosition(enemy.position.x - barWidth / 2, barY).setSize(barWidth * hpRatio, boss ? 6 : 4).setVisible(showBar);
       graphics.label?.setPosition(enemy.position.x, barY - 9);
+      const stunMs = enemy.stunRemainingMs ?? 0;
+      graphics.stunLabel.setPosition(enemy.position.x, barY - (boss ? 25 : 9))
+        .setText(`СТАН ${(stunMs / 1000).toFixed(1)} с`).setVisible(enemy.hp > 0 && stunMs > 0);
     }
   }
 
   private destroyItem(graphics: EnemyGraphics) {
-    graphics.body.destroy(); graphics.shadow.destroy(); graphics.hpBar.destroy(); graphics.hpBarBg.destroy(); graphics.label?.destroy();
+    graphics.body.destroy(); graphics.shadow.destroy(); graphics.hpBar.destroy(); graphics.hpBarBg.destroy(); graphics.label?.destroy(); graphics.stunLabel.destroy();
   }
   destroy() { for (const graphics of this.items.values()) this.destroyItem(graphics); this.items.clear(); }
 }

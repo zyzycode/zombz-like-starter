@@ -65,7 +65,7 @@ export class RunController {
       const step = Math.min(16, remaining);
       this.world.update(step, stepInput);
       remaining -= step;
-      stepInput = { ...input, attackPressed: false, interactPressed: false, fireboltPressed: false, novaPressed: false, dodgePressed: false };
+      stepInput = { ...input, attackPressed: false, interactPressed: false, fireboltPressed: false, novaPressed: false, shieldBashPressed: false, dodgePressed: false };
       const state = this.world.getState();
       const kills = state.runSession.killedEnemies;
       if (kills > this.lastKills) {

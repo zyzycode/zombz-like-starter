@@ -1,4 +1,5 @@
 import type {
+  StatusEffect,
   AttackConfig,
   AttackModifier,
   AttackRuntimeState,
@@ -28,6 +29,7 @@ export interface Damageable {
   isAlive: boolean;
   team: TeamId;
   applyDamage: (amount: number, damageType: DamageType) => void;
+  applyStatus?: (effect: StatusEffect) => void;
   applyKnockback?: (impulse: Vector2) => void;
 }
 

@@ -40,6 +40,9 @@ export class CombatResolver {
 
       target.applyDamage(resolvedAttack.damage, resolvedAttack.damageType);
       target.applyKnockback?.(scaleVector(attackDirection, resolvedAttack.knockback));
+      if (target.isAlive) {
+        for (const effect of resolvedAttack.statusEffects ?? []) target.applyStatus?.(effect);
+      }
       hitCount += 1;
     }
 

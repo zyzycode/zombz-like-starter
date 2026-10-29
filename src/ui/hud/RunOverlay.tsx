@@ -13,7 +13,7 @@ export function RunOverlay() {
     <h1>Пепельный<br /><em>путь</em></h1><p className="intro">Шесть испытаний. Три биома. Один шанс добраться до хранителя пепла.</p>
     <div className="journey-line"><span>Сражайся</span><i>→</i><span>Выбирай награды</span><i>→</i><span>Создавай билд</span></div>
     <button className="button primary large" disabled={!actions} onClick={() => actions?.startRun()}>Начать забег <span>→</span></button>
-    <div className="menu-controls"><span><kbd>WASD</kbd> движение</span><span><kbd>ЛКМ</kbd> удар</span><span><kbd>Q / R</kbd> магия</span><span><kbd>Shift</kbd> рывок</span></div>
+    <div className="menu-controls"><span><kbd>WASD</kbd> движение</span><span><kbd>ЛКМ</kbd> удар</span><span><kbd>Q / R</kbd> магия</span><span><kbd>F</kbd> стан</span><span><kbd>Shift</kbd> рывок</span></div>
     <div className="menu-records"><span>Лучший путь <b>{snapshot.meta.bestDepth}/{snapshot.totalLevels}</b></span><span>Забегов <b>{snapshot.meta.runs}</b></span><span>Наследие <b className="gold">{snapshot.meta.shards} ✦</b></span></div>
     <p className="muted small">Постоянные улучшения — во вкладке «Наследие». Временная экипировка и навыки начинают путь заново.</p>
     {snapshot.metaError && <p className="notice error">{snapshot.metaError}</p>}

@@ -3,7 +3,7 @@ import { steerAroundCollision } from '@/game/core/enemies/steerAroundCollision';
 import type { CollisionSteeringMemory } from '@/game/core/enemies/steerAroundCollision';
 import type { AttackController } from '@/game/core/combat/AttackController';
 import type { EnemyArchetype } from '@/game/core/enemies/EnemyArchetype';
-import type { AttackPayload, EnemyState, PlayerState, Vector2 } from '@/shared/types/game';
+import type { StatusEffect, AttackPayload, EnemyState, PlayerState, Vector2 } from '@/shared/types/game';
 
 /** Базовый класс врага, совместимый с общей системой состояний и анимаций. */
 export class Enemy extends Character {
@@ -26,6 +26,7 @@ export class Enemy extends Character {
     onHit: (attack: AttackPayload) => void;
     resolvePosition: (nextPosition: Vector2, radius: number) => Vector2;
   }) {
+    const wasStunned = this.stunRemainingMs > 0;
     this.updateCombatReaction(params.deltaMs, params.resolvePosition);
 
     if (this.hp <= 0) {
@@ -33,7 +34,7 @@ export class Enemy extends Character {
       return false;
     }
 
-    if (this.hurtTimerMs > 0) {
+    if (wasStunned || this.hurtTimerMs > 0) {
       this.state = 'hurt';
       return true;
     }
@@ -76,7 +77,12 @@ export class Enemy extends Character {
     return true;
   }
 
+  override applyStatus(effect: StatusEffect) {
+    super.applyStatus({ ...effect, durationMs: effect.durationMs * (this.archetype.stunDurationMultiplier ?? 1) });
+  }
+
   applyResolvedState(state: EnemyState) {
+    this.stunRemainingMs = state.stunRemainingMs ?? 0;
     this.hp = state.hp;
     this.maxHp = state.maxHp;
     this.hurtTimerMs = state.hurtTimerMs;

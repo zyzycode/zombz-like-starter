@@ -1,3 +1,4 @@
+import { vectorToDirection } from '@/game/core/math/directions';
 import { CombatResolver } from '@/game/core/combat/CombatResolver';
 import type { ProjectileSystem } from '@/game/core/combat/ProjectileSystem';
 import type { Player } from '@/game/core/characters/Player';
@@ -9,6 +10,16 @@ export class AbilitySystem {
 
   update(params: { player: Player; input: InputState; enemies: Enemy[]; projectiles: ProjectileSystem }) {
     const { player, input, projectiles } = params;
+    if (input.shieldBashPressed && player.cast('shieldBash')) {
+      const direction = vectorToDirection(input.aim.x - player.position.x, input.aim.y - player.position.y) ?? player.direction;
+      player.setShieldBashDirection(direction);
+      this.resolver.resolveAttack({
+        sourceId: player.id, team: player.team, type: 'melee', damageType: 'physical',
+        damage: player.attack.config.damage * 0.6, range: 0, radius: 110, arcDegrees: 120,
+        direction, origin: { ...player.position }, knockback: 0, hitStopMs: 0,
+        statusEffects: [{ kind: 'stun', durationMs: 1400 }],
+      }, params.enemies);
+    }
     if (input.fireboltPressed && player.cast('firebolt')) {
       const dx = input.aim.x - player.position.x, dy = input.aim.y - player.position.y;
       const length = Math.hypot(dx, dy);
