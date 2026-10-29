@@ -1,6 +1,7 @@
 import type { MapDefinition, MapPropDefinition } from '@/game/content/maps/types';
 import type { CampaignStage } from '@/game/content/campaign/campaign';
 import { ARENA_LAYOUTS, onTrail } from '@/game/content/campaign/arenaLayouts';
+import { createArenaHazards } from '@/game/content/campaign/arenaHazards';
 
 const COLUMNS = 30, ROWS = 22, TILE = 32;
 const TOWN_GID = 1, DUNGEON_GID = 1001;
@@ -77,6 +78,7 @@ export function createArenaMap(stage: CampaignStage, depth: number): MapDefiniti
       })),
     ],
     props,
+    hazards: createArenaHazards(stage),
     collision: layout.islands.map((position, i) => ({ id: `cover-${i}`, kind: 'circle', position: { ...position, y: position.y - 6 }, radius: 26 })),
     restorationSites: [{ id: `${stage.id}-spring`, position: layout.restoration, radius: 64, healthFraction: .35, manaFraction: .6 }],
   };

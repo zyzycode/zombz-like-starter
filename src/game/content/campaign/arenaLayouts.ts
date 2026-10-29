@@ -42,7 +42,7 @@ export const ARENA_LAYOUTS: Record<string, ArenaLayout> = {
   'frost-1': {
     trails: [trail(3.2, [0, 11], [9, 11], [9, 6], [20, 6], [20, 16], [30, 16]), trail(2.2, [9, 11], [30, 11])],
     clearings: [{ x: 15, y: 11, radius: 3.4 }],
-    islands: sites([240, 176], [496, 192], [272, 520], [752, 520]),
+    islands: sites([240, 176], [496, 192], [272, 520], [720, 520]),
     restoration: { x: 160, y: 352 },
   },
   'frost-2': {

@@ -146,7 +146,7 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
 .status-dot { width: 5px; height: 25px; border-radius: 3px; }
 .stage-chip .eyebrow { display: block; color: #95aa9b; font-size: 8px; margin-bottom: 5px; }
 .stage-chip strong { font: 500 13px Georgia, serif; }
-.field-hint { position: absolute; bottom: 18px; left: 22px; color: #b2c6b9; background: #0b1711bf; border-radius: 4px; padding: 8px 11px; font-size: 10px; }
+.field-hint { position: absolute; bottom: 18px; left: 22px; max-width: calc(100% - 44px); line-height: 1.6; color: #b2c6b9; background: #0b1711bf; border-radius: 4px; padding: 8px 11px; font-size: 10px; }
 .field-hint kbd { margin-left: 5px; font-size: 9px; }
 @media (max-width: 1050px) {
   .game-shell { grid-template-columns: minmax(0, 1fr) 270px; }

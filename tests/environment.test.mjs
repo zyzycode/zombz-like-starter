@@ -113,7 +113,7 @@ test('campaign level replacement preserves restored resources and run identity b
 });
 
 // Check the same static collision model used by actual movement, ignoring visual props.
-function arenaTraversal(map, start, radius = 30) {
+function arenaTraversal(map, start, radius = 38) {
   const collision = new CollisionSystem();
   const collisionGrid = new CollisionGrid(map.width, map.height, map.collision);
   const safe = (position) => {
@@ -159,7 +159,7 @@ test('all six arenas keep boss-sized spawn jitter and restoration sites connecte
     const player = map.markers.find((marker) => marker.kind === 'player_spawn');
     assert.ok(player, `${stage.id}: player spawn required`);
     const traversal = arenaTraversal(map, player.position);
-    assert.ok(traversal.safe(player.position), `${stage.id}: player spawn overlaps static collision for radius 30`);
+    assert.ok(traversal.safe(player.position), `${stage.id}: player spawn overlaps static collision for radius 38`);
     assert.ok(traversal.reachable(player.position), `${stage.id}: player cannot enter traversal grid`);
     const targets = (map.restorationSites ?? []).map((spring) => ({ label: `spring ${spring.id}`, position: spring.position }));
     const spawns = map.markers.filter((marker) => marker.kind === 'enemy_spawn');
@@ -175,8 +175,8 @@ test('all six arenas keep boss-sized spawn jitter and restoration sites connecte
       }
     }
     for (const { label, position } of targets) {
-      assert.ok(traversal.safe(position), `${stage.id}: ${label} overlaps static collision for radius 30`);
-      assert.ok(traversal.reachable(position), `${stage.id}: ${label} has no radius-30 path from player`);
+      assert.ok(traversal.safe(position), `${stage.id}: ${label} overlaps static collision for radius 38`);
+      assert.ok(traversal.reachable(position), `${stage.id}: ${label} has no radius-38 path from player`);
     }
   }
 });

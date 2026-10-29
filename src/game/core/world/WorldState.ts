@@ -1,6 +1,7 @@
 import type { RunResult } from '@/game/core/extraction/RunResult';
 import type { RunSessionState } from '@/game/core/world/RunSession';
 import type { RestorationSiteState } from '@/game/core/environment/RestorationSite';
+import type { ArenaHazardState } from '@/game/core/environment/ArenaHazard';
 import type {
   DestructibleState,
   DroppedResourceState,
@@ -15,6 +16,7 @@ export type WorldState = {
   status?: 'active' | 'cleared' | 'dead';
   projectiles?: ProjectileState[];
   restorationSites?: RestorationSiteState[];
+  hazards?: ArenaHazardState[];
   refs: {
     mapId: string;
     levelId: string;

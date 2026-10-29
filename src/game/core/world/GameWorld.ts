@@ -1,5 +1,6 @@
 import { AbilitySystem } from '@/game/core/combat/AbilitySystem';
 import { RestorationSystem } from '@/game/core/environment/RestorationSystem';
+import { HazardSystem } from '@/game/core/environment/HazardSystem';
 import { ProjectileSystem } from '@/game/core/combat/ProjectileSystem';
 import type { Stats } from '@/game/core/progression/types';
 import { Player } from '@/game/core/characters/Player';
@@ -36,6 +37,7 @@ export class GameWorld {
   private clearedWaves = 0;
   private readonly abilities = new AbilitySystem();
   private readonly restoration: RestorationSystem;
+  private readonly hazards: HazardSystem;
   private readonly projectiles = new ProjectileSystem();
   private readonly levelId: string;
   private readonly map: MapDefinition;
@@ -81,6 +83,7 @@ export class GameWorld {
     const { builtLevel } = params;
     const state = builtLevel.initialState;
     this.restoration = new RestorationSystem(state.restorationSites ?? []);
+    this.hazards = new HazardSystem(builtLevel.map.hazards ?? []);
 
     this.map = builtLevel.map;
     this.levelId = builtLevel.level.id;
@@ -112,6 +115,7 @@ export class GameWorld {
       status: this.status,
       projectiles: this.projectiles.getState(),
       restorationSites: this.restoration.getState(),
+      hazards: this.hazards.getState(),
       refs: {
         mapId: this.map.id,
         levelId: this.levelId,
@@ -218,6 +222,7 @@ export class GameWorld {
       player: this.player,
     });
     this.projectiles.update(deltaMs, [this.player, ...this.enemies], this.resolveCharacterCollision);
+    this.hazards.update(deltaMs, [this.player, ...this.enemies]);
     const playerTookDamage = this.player.hp < playerHpBeforeEnemyHits;
 
     this.resolveWorldDrops(

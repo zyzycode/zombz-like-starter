@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { characterAnimationLibrary, enemyAnimationLibrary } from '@/game/config/characterAnimations';
+import { characterAnimationLibrary } from '@/game/config/characterAnimations';
+import { enemyAppearances } from '@/game/config/enemies/enemyAnimations';
 import { LOOT_TEXTURE_KEY, LOOT_TEXTURE_PATH } from '@/game/config/loot/lootTexture';
 import {
   DESTRUCTIBLE_TEXTURE_ALT_KEY,
@@ -7,6 +8,10 @@ import {
   DESTRUCTIBLE_TEXTURE_KEY,
   DESTRUCTIBLE_TEXTURE_PATH,
 } from '@/game/config/playerTexture';
+
+const animationLibraries = [characterAnimationLibrary, ...Object.values(enemyAppearances).map(({ library }) => library)];
+const characterSheets = new Map(animationLibraries.flatMap((library) =>
+  Object.values(library.sheets).map((sheet) => [sheet.key, sheet] as const)));
 
 /**
  * Сцена загрузки ассетов перед стартом основной игры.
@@ -17,15 +22,11 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    const animationLibraries = [characterAnimationLibrary, enemyAnimationLibrary];
-
-    for (const library of animationLibraries) {
-      for (const sheet of Object.values(library.sheets)) {
-        this.load.spritesheet(sheet.key, sheet.path, {
-          frameWidth: sheet.frameWidth,
-          frameHeight: sheet.frameHeight,
-        });
-      }
+    for (const sheet of characterSheets.values()) {
+      this.load.spritesheet(sheet.key, sheet.path, {
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
+      });
     }
 
     // Campaign has no destructibles; legacy optional textures are absent from this asset pack.
@@ -54,6 +55,9 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
+    for (const sheet of characterSheets.values()) {
+      if (this.textures.exists(sheet.key)) this.textures.get(sheet.key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
     this.scene.start(this.game.registry.get('selectedLevelId') === 'campaign' ? 'campaign' : 'game');
   }
 }

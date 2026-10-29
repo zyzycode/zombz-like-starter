@@ -5,6 +5,7 @@ import type { WorldState } from '@/game/core/world/WorldState';
 import { CombatEffectsRenderer } from '@/game/presentation/phaser/renderer/CombatEffectsRenderer';
 import { EntityRenderer } from '@/game/presentation/phaser/renderer/EntityRenderer';
 import { MapRenderer } from '@/game/presentation/phaser/renderer/MapRenderer';
+import { HazardView } from '@/game/presentation/phaser/objects/HazardView';
 
 const CAMERA_ZOOM = 1.5;
 
@@ -16,11 +17,13 @@ export class WorldRenderer {
   private readonly mapRenderer: MapRenderer;
   private readonly entityRenderer: EntityRenderer;
   private readonly effectRenderer: CombatEffectsRenderer;
+  private readonly hazardView: HazardView;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.mapRenderer = new MapRenderer(scene);
     this.entityRenderer = new EntityRenderer(scene);
     this.effectRenderer = new CombatEffectsRenderer(scene);
+    this.hazardView = new HazardView(scene);
   }
 
   initialize(map: MapDefinition, initialState: WorldState, camera: Camera) {
@@ -32,6 +35,7 @@ export class WorldRenderer {
   render(state: WorldState, deltaMs: number) {
     this.entityRenderer.render(state, deltaMs);
     this.effectRenderer.render(state, deltaMs);
+    this.hazardView.render(state.hazards ?? []);
   }
 
   applyCamera(camera: Camera) {
@@ -55,5 +59,6 @@ export class WorldRenderer {
     this.mapRenderer.destroy();
     this.entityRenderer.destroy();
     this.effectRenderer.destroy();
+    this.hazardView.destroy();
   }
 }

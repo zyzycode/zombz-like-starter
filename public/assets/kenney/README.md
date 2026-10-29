@@ -22,4 +22,4 @@ greens and warm earth colors were mapped to snow/ice colors before scaling.
 These are adapted existing artwork, not newly drawn art.
 
 Kenney character tiles are static and are not used for movement/attack animations.
-The hero uses the separately licensed Legend pack; enemies retain their previous sheets.
+The hero uses the separately licensed Legend pack; enemies use Ninja Adventure (also CC0).

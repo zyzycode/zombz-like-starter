@@ -1,5 +1,6 @@
 import type { ResourceNodeType, Vector2 } from '@/shared/types/game';
 import type { RestorationSiteDefinition } from '@/game/core/environment/RestorationSite';
+import type { ArenaHazardDefinition } from '@/game/core/environment/ArenaHazard';
 
 export type MapRect = {
   x: number;
@@ -98,5 +99,6 @@ export type MapDefinition = {
   markers: MapMarkerDefinition[];
   props: MapPropDefinition[];
   restorationSites?: RestorationSiteDefinition[];
+  hazards?: ArenaHazardDefinition[];
   collision: CollisionShapeDefinition[];
 };
