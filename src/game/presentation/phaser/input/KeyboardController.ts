@@ -26,7 +26,9 @@ export class KeyboardController {
   private wasInteractDown = false;
   private previousAbilities = { Q: false, R: false, F: false, Z: false, X: false, C: false, SHIFT: false };
 
-  constructor(private readonly scene: Phaser.Scene) {
+  private waitForRelease = false;
+
+  constructor(private readonly scene: Phaser.Scene, private readonly isInputBlocked: () => boolean = () => false) {
     this.keys = this.scene.input.keyboard!.addKeys('W,A,S,D,SPACE,E,Q,R,F,Z,X,C,SHIFT') as MovementKeys;
 
     this.scene.input.on('pointermove', this.updatePointer);
@@ -63,6 +65,17 @@ export class KeyboardController {
     const slotCPressed = this.keys.C.isDown && !this.previousAbilities.C;
     const dodgePressed = this.keys.SHIFT.isDown && !this.previousAbilities.SHIFT;
     this.previousAbilities = { Q: this.keys.Q.isDown, R: this.keys.R.isDown, F: this.keys.F.isDown, Z: this.keys.Z.isDown, X: this.keys.X.isDown, C: this.keys.C.isDown, SHIFT: this.keys.SHIFT.isDown };
+
+    // Consume held-key edges while a management window owns keyboard focus.
+    const blocked = this.isInputBlocked();
+    if (blocked) this.waitForRelease = true;
+    const held = Object.values(this.keys).some((key) => key.isDown) || this.scene.input.activePointer.leftButtonDown();
+    if (!blocked && !held) this.waitForRelease = false;
+    if (blocked || this.waitForRelease) return {
+      up: false, down: false, left: false, right: false, attackPressed: false, attackHeld: false,
+      interactPressed: false, fireboltPressed: false, novaPressed: false, shieldBashPressed: false,
+      slotZPressed: false, slotXPressed: false, slotCPressed: false, dodgePressed: false, aim: this.pointerWorld,
+    };
 
     // Объединяем клавиатуру и мышь в один объект, независимый от Phaser API.
     return {

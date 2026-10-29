@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { SKILLS } from '@/game/core/progression/skills';
 import { ACTIVE_ABILITIES, isActiveAbility } from '@/game/core/combat/activeAbilities';
 import { META_UPGRADES } from '@/game/core/meta/MetaProgression';
@@ -44,27 +44,11 @@ function EquipmentComparison({ current, preview, removing }: { current: Stats; p
   </div>;
 }
 
-function focusInventorySection(section: HTMLElement | null) {
-  if (!section) return;
-  section.focus({ preventScroll: true });
-  const panel = section.closest('.hud-tab-content');
-  if (panel instanceof HTMLElement) {
-    panel.scrollTo({ top: panel.scrollTop + section.getBoundingClientRect().top - panel.getBoundingClientRect().top });
-  }
-}
-
 export function InventoryPanel({ snapshot, actions }: PanelProps) {
   const { build, phase } = snapshot;
   const [filter, setFilter] = useState<ItemSlot | 'all'>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const detailRef = useRef<HTMLElement>(null);
-  const bagRef = useRef<HTMLElement>(null);
-  const showDetails = (id: string) => {
-    setSelectedId(id);
-    requestAnimationFrame(() => {
-      focusInventorySection(detailRef.current);
-    });
-  };
+  const showDetails = (id: string) => setSelectedId(id);
   const canEdit = phase === 'reward' || phase === 'paused';
   const filteredItems = build.inventory.filter((item) => filter === 'all' || item.slot === filter);
   const selected = filteredItems.find((item) => item.id === selectedId) ?? filteredItems[0];
@@ -83,7 +67,7 @@ export function InventoryPanel({ snapshot, actions }: PanelProps) {
         </div>;
       })}
     </section>
-    <section ref={bagRef} tabIndex={-1} className="inventory-bag" aria-label="Вещи в забеге">
+    <section className="inventory-bag" aria-label="Вещи в забеге">
       <div className="section-caption"><h3>Все вещи</h3><span className="muted">{build.inventory.length}</span></div>
       {build.inventory.length === 0 ? <p className="empty-hint">Первая экипировка ждёт после зачистки уровня.</p> : <>
         <div className="inventory-filters" role="group" aria-label="Фильтр вещей">
@@ -96,7 +80,7 @@ export function InventoryPanel({ snapshot, actions }: PanelProps) {
         {filteredItems.length === 0 && <p className="empty-hint">Вещей этого типа пока нет.</p>}
       </>}
     </section>
-    {selected && <section ref={detailRef} tabIndex={-1} className="inventory-detail" aria-label={`Выбранная вещь: ${selected.name}`}>
+    {selected && <section key={selected.id} className="inventory-detail" aria-label={`Выбранная вещь: ${selected.name}`}>
       <h3 className={`rarity-${selected.rarity}`}>{selected.name}</h3>
       <p className="muted small">{SLOT_LABELS[selected.slot]} · {RARITY_LABELS[selected.rarity]}</p>
       <p className="item-description">{selected.description}</p>
@@ -106,9 +90,9 @@ export function InventoryPanel({ snapshot, actions }: PanelProps) {
       <button type="button" className="button secondary compact" disabled={!actions || !canEdit || !preview} onClick={() => equipped ? actions?.unequip(selected.slot) : actions?.equip(selected.id)}>
         {equipped ? 'Снять в рюкзак' : 'Надеть'}
       </button>
-      <button type="button" className="button text-button compact" onClick={() => focusInventorySection(bagRef.current)}>К списку вещей</button>
       <p className="muted small">Снятые вещи остаются в рюкзаке. Смена экипировки не восстанавливает здоровье и ману. При снижении максимума текущий запас ограничивается им.</p>
     </section>}
+    {!selected && <section className="inventory-detail inventory-empty"><h3>Выбери вещь</h3><p className="muted small">Здесь появятся свойства предмета и сравнение с надетым снаряжением.</p></section>}
   </div>;
 }
 
@@ -116,7 +100,7 @@ export function SkillsPanel({ snapshot, actions }: PanelProps) {
   const { build, phase } = snapshot;
   const canEdit = phase === 'reward' || phase === 'paused';
   const branches = [{ prefix: 'warrior', name: 'Воин', symbol: 'Ⅰ' }, { prefix: 'mage', name: 'Маг', symbol: 'Ⅱ' }, { prefix: 'survivor', name: 'Выживание', symbol: 'Ⅲ' }];
-  return <div className="panel-stack">
+  return <div className="panel-stack skills-panel">
     <div className="section-caption"><span>Очки навыков</span><b className="accent">{build.skillPoints}</b></div>
     <p className="muted small">В каждой ветке два активных навыка: первый открывается после первого пассива, второй — после второго. Каждый стоит 1 очко. Новые навыки назначай в набор вручную.</p>
     {!canEdit && <p className="muted small">Пауза останавливает бой и позволяет распределить очки.</p>}

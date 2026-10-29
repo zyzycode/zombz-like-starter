@@ -276,3 +276,101 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
   .route-option { padding-inline: 6px; gap: 8px; }
   .route-option small { display: block; margin: 4px 0 0; }
 }
+
+/* Combat stays compact; character management has its own full-width workspace. */
+.game-shell { grid-template-columns: minmax(0, 1fr) 280px; }
+.game-sidebar { overflow-y: auto; scrollbar-width: thin; scrollbar-color: #485d50 transparent; }
+.sidebar-header { padding: 14px 16px 10px; }
+.sidebar-header h2 { font-size: 23px; }
+.game-sidebar .vitals { padding: 12px 16px 10px; }
+.game-sidebar .abilities { padding-inline: 16px; }
+.game-sidebar .sidebar-footer { margin-top: auto; }
+.management-launchers { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 4px 16px 16px; }
+.management-launchers .button { padding: 11px 6px; font-size: 12px; }
+.management-window { width: min(1220px, calc(100vw - 40px)); height: min(820px, calc(100dvh - 40px)); max-width: none; max-height: none; padding: 0; border: 1px solid #51665b; border-radius: 12px; background: #15211b; color: #e5e8e4; overflow: hidden; }
+.management-window[open] { display: flex; flex-direction: column; }
+.management-window::backdrop { background: #040b08c9; }
+.management-header { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 28px 17px; }
+.management-header h1 { font: 400 30px/1.15 Georgia, serif; }
+.management-header p { margin-top: 7px; color: #b3c5b9; font-size: 12px; }
+.management-tabs { display: flex; gap: 6px; padding: 0 28px; border-bottom: 1px solid #ffffff26; }
+.management-tabs button { padding: 13px 18px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #b3c5b9; font-size: 14px; }
+.management-tabs button:hover { color: #e5e8e4; background: #ffffff06; }
+.management-tabs button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.management-content { flex: 1; min-height: 0; overflow: auto; padding: 22px 28px 28px; scrollbar-width: thin; scrollbar-color: #657c6e transparent; }
+.management-content .small { font-size: 13px; }
+.management-content h3 { font-size: 16px; }
+.management-inventory { overflow: hidden; }
+.management-content .inventory-panel { display: grid; grid-template-columns: minmax(170px, .75fr) minmax(230px, 1fr) minmax(290px, 1.25fr); grid-template-rows: auto minmax(0, 1fr); gap: 20px; height: 100%; }
+.inventory-panel > p { grid-column: 1 / -1; }
+.management-content .inventory-equipment, .management-content .inventory-bag, .management-content .inventory-detail { min-width: 0; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #657c6e transparent; padding-right: 8px; }
+.management-content .inventory-equipment { padding-right: 18px; border-right: 1px solid var(--line); }
+.management-content .equipment-row { display: flex; align-items: flex-start; flex-direction: column; gap: 6px; padding: 12px 0; font-size: 12px; }
+.management-content .equipment-name { font-size: 13px; }
+.management-content .inventory-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 14px 0; }
+.management-content .inventory-filters button { font-size: 11px; padding: 8px 3px; }
+.management-content .inventory-list { gap: 6px; }
+.management-content .inventory-item { font-size: 13px; padding: 12px; gap: 6px; }
+.management-content .inventory-item small { font-size: 11px; }
+.management-content .inventory-detail { border-top: 0; border-left: 1px solid var(--line); padding: 0 8px 0 20px; }
+.management-content .inventory-detail h3 { font-size: 20px; }
+.management-content .item-description { font-size: 13px; margin-block: 12px; }
+.management-content .item-bonuses { font-size: 13px; line-height: 1.65; }
+.management-content .replacement-caption { font-size: 12px; margin-top: 18px; }
+.management-content .equipment-comparison h4 { font-size: 13px; }
+.management-content .equipment-comparison table { font-size: 12px; }
+.management-content .equipment-comparison thead th, .management-content .equipment-comparison td small { font-size: 11px; }
+.management-content .equipment-comparison td, .management-content .equipment-comparison th { padding-block: 9px; }
+.management-content .inventory-detail .button { padding: 12px; font-size: 13px; }
+.inventory-empty p { margin-top: 12px; }
+.management-content .skills-panel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.skills-panel > .section-caption, .skills-panel > p, .skills-panel > .ability-loadout { grid-column: 1 / -1; }
+.management-content .ability-loadout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.management-content .ability-loadout legend { font-size: 14px; }
+.management-content .ability-loadout label { margin: 0; }
+.management-content .ability-loadout p { grid-column: 1 / -1; margin: 0; font-size: 12px; }
+.management-content .ability-loadout select { font-size: 13px; padding: 10px; }
+.management-content .skill-node { padding: 15px; }
+.management-content .skill-node .section-caption { font-size: 13px; }
+.management-content .skill-node p, .management-content .meta-upgrade p { font-size: 13px; }
+.management-content .skill-node small { font-size: 12px; }
+.management-content .skill-node .button { font-size: 12px; }
+.management-meta > .panel-stack { max-width: 720px; margin: 0 auto; }
+.management-controls > .controls { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+.management-controls .controls > h3, .management-controls .controls > p { grid-column: 1 / -1; }
+.management-controls .controls > div { font-size: 13px; }
+@media (max-width: 950px) {
+  .game-shell { grid-template-columns: minmax(0, 1fr) 240px; }
+  .management-window { width: calc(100vw - 20px); height: calc(100dvh - 20px); }
+  .management-header { padding: 18px; }
+  .management-tabs { padding-inline: 18px; }
+  .management-content { padding: 18px; }
+  .management-content .inventory-panel { grid-template-columns: minmax(135px, .65fr) minmax(180px, .9fr) minmax(240px, 1.15fr); gap: 12px; }
+  .management-content .inventory-detail { padding-left: 12px; }
+}
+@media (max-width: 720px) {
+  .game-shell { grid-template-columns: minmax(0, 1fr) 200px; }
+  .management-header h1 { font-size: 25px; }
+  .management-header .button { padding: 9px; }
+  .management-tabs { gap: 0; padding-inline: 8px; }
+  .management-tabs button { padding: 12px 9px; font-size: 12px; flex: 1; }
+  .management-inventory { overflow: auto; }
+  .management-content .inventory-panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto; height: auto; }
+  .management-content .inventory-equipment { grid-column: 1 / -1; display: flex; gap: 12px; flex-wrap: wrap; border-right: 0; padding: 0 0 14px; border-bottom: 1px solid var(--line); overflow: visible; }
+  .inventory-equipment > h3 { width: 100%; }
+  .management-content .equipment-row { flex: 1 1 100px; padding: 0; border: 0; }
+  .management-content .inventory-bag, .management-content .inventory-detail { max-height: none; overflow: visible; }
+  .management-content .inventory-filters { grid-template-columns: 1fr 1fr; }
+  .management-content .skills-panel { grid-template-columns: 1fr; }
+  .management-content .ability-loadout { grid-template-columns: 1fr; }
+  .management-launchers { grid-template-columns: 1fr; }
+  .management-controls > .controls { grid-template-columns: 1fr; }
+}
+@media (max-width: 460px) {
+  .management-content .inventory-panel { grid-template-columns: 1fr; }
+  .management-content .inventory-detail { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
+  .management-header { gap: 8px; padding: 14px; }
+  .management-header p { font-size: 11px; }
+  .management-tabs button { padding-inline: 5px; }
+  .management-window { width: calc(100vw - 12px); height: calc(100dvh - 12px); }
+}

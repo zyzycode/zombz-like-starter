@@ -1,14 +1,7 @@
-import { useState } from 'react';
 import { ELITE_BONUS_XP } from '@/game/core/enemies/eliteModifiers';
 import { ACTIVE_ABILITIES } from '@/game/core/combat/activeAbilities';
 import { useHudStore } from './useHudStore';
-import { ControlsPanel, InventoryPanel, MetaPanel, SkillsPanel } from './BuildPanels';
-
-type Tab = 'inventory' | 'skills' | 'meta' | 'controls';
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'inventory', label: 'Вещи' }, { id: 'skills', label: 'Навыки' },
-  { id: 'meta', label: 'Наследие' }, { id: 'controls', label: 'Клавиши' },
-];
+import { MANAGEMENT_TABS, type ManagementTab } from './ManagementWindow';
 
 function Meter({ label, value, max, kind }: { label: string; value: number; max: number; kind: string }) {
   return <div className={`meter ${kind}`}>
@@ -26,10 +19,9 @@ function Ability({ hotkey, name, cooldown, description, mana = Infinity, cost = 
   </div>;
 }
 
-export function Hud() {
+export function Hud({ onOpen }: { onOpen: (tab: ManagementTab) => void }) {
   const snapshot = useHudStore((state) => state.snapshot);
   const actions = useHudStore((state) => state.actions);
-  const [tab, setTab] = useState<Tab>('inventory');
   if (!snapshot) return <div className="sidebar-loading"><span className="eyebrow">Пепельный путь</span><p>Подготовка мира…</p></div>;
   const { world, build, phase } = snapshot;
   const abilities = world?.player.abilities;
@@ -89,14 +81,8 @@ export function Hud() {
     {snapshot.lastCacheItem && <p className="cache-find" role="status">В рюкзаке: <strong className={`rarity-${snapshot.lastCacheItem.rarity}`}>{snapshot.lastCacheItem.name}</strong></p>}
     {phase === 'exploring' && <button className="button primary pause-button" onClick={() => actions?.finishExploration()}>К наградам <kbd>Esc</kbd></button>}
     {(playing || phase === 'paused') && <button className="button secondary pause-button" onClick={() => actions?.togglePause()}>{playing ? 'Пауза и развитие' : world?.status === 'securing' ? 'Продолжить путь' : 'Продолжить бой'} <kbd>Esc</kbd></button>}
-    {build.skillPoints > 0 && <button className="skill-points-banner" onClick={() => { if (playing) actions?.togglePause(); else if (phase === 'exploring') actions?.finishExploration(); setTab('skills'); }}>Доступно очков навыков: {build.skillPoints} <span>→</span></button>}
-    <nav className="hud-tabs" aria-label="Панели персонажа">{TABS.map((entry) => <button key={entry.id} className={tab === entry.id ? 'active' : ''} aria-pressed={tab === entry.id} onClick={() => setTab(entry.id)}>{entry.label}</button>)}</nav>
-    <div className="hud-tab-content">
-      {tab === 'inventory' && <InventoryPanel snapshot={snapshot} actions={actions} />}
-      {tab === 'skills' && <SkillsPanel snapshot={snapshot} actions={actions} />}
-      {tab === 'meta' && <MetaPanel snapshot={snapshot} actions={actions} />}
-      {tab === 'controls' && <ControlsPanel />}
-    </div>
+    {build.skillPoints > 0 && <button className="skill-points-banner" onClick={() => onOpen('skills')}>Развить навыки · {build.skillPoints} очков</button>}
+    <nav className="management-launchers" aria-label="Управление персонажем">{MANAGEMENT_TABS.map((entry) => <button key={entry.id} className="button secondary" disabled={!actions || phase === 'loading' || phase === 'error'} onClick={() => onOpen(entry.id)}>{entry.label}</button>)}</nav>
     <footer className="sidebar-footer">Одиночный забег · прогресс хранится локально<br />Графика: <a href="https://flarerpg.org/" target="_blank" rel="noreferrer">Flare</a> · <a href="/assets/flare/README.md" target="_blank" rel="noreferrer">авторы и лицензия</a></footer>
   </>;
 }

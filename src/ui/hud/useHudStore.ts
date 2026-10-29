@@ -31,6 +31,8 @@ type HudStats = {
 
 /** Zustand-хранилище для HUD-состояния. */
 type HudStore = {
+  managementOpen: boolean;
+  setManagementOpen: (open: boolean) => void;
   snapshot: RunSnapshot | null;
   actions: RunActions | null;
   setRun: (snapshot: RunSnapshot | null) => void;
@@ -45,6 +47,8 @@ type HudStore = {
 
 /** Глобальный стор HUD для React-слоя. */
 export const useHudStore = create<HudStore>((set) => ({
+  managementOpen: false,
+  setManagementOpen: (managementOpen) => set({ managementOpen }),
   snapshot: null,
   actions: null,
   setRun: (snapshot) => set({ snapshot }),

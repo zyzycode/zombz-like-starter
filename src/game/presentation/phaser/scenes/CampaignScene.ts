@@ -25,10 +25,9 @@ export class CampaignScene extends Phaser.Scene {
 
   create() {
     this.run = new RunController(new MetaProgression(new LocalMetaProfileRepository()));
-    this.inputController = new KeyboardController(this);
+    this.inputController = new KeyboardController(this, () => useHudStore.getState().managementOpen || document.activeElement?.matches('input, select, textarea, [contenteditable="true"]') === true);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.cleanup, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.cleanup, this);
-    this.input.keyboard?.on('keydown-ESC', this.pause);
     this.game.events.on(Phaser.Core.Events.BLUR, this.onBlur);
     this.scale.on(Phaser.Scale.Events.RESIZE, this.resize, this);
     const run = this.run;
@@ -65,8 +64,8 @@ export class CampaignScene extends Phaser.Scene {
     if (world && world === this.renderedWorld && this.worldRenderer && this.cameraModel) {
       this.run.update(delta, this.inputController.read());
       const state = world.getState();
-      this.cameraModel.x = state.player.position.x;
-      this.cameraModel.y = state.player.position.y;
+      this.cameraModel.setTarget(state.player);
+      this.cameraModel.update();
       this.worldRenderer.render(state, Math.min(delta, 50));
       this.worldRenderer.applyCamera(this.cameraModel);
       if (state.combat.cameraShakePulse !== this.lastShake) {
@@ -92,7 +91,7 @@ export class CampaignScene extends Phaser.Scene {
       if (controller.signal.aborted || this.run?.getWorld() !== world) return;
       const state = world.getState();
       this.cameraModel = new Camera({ x: state.player.position.x, y: state.player.position.y, width: this.scale.width, height: this.scale.height,
-        options: { bounds: { minX: 0, minY: 0, maxX: built.map.width, maxY: built.map.height } } });
+        options: { zoom: 1.5, bounds: { minX: 0, minY: 0, maxX: built.map.width, maxY: built.map.height } } });
       this.worldRenderer = new WorldRenderer(this);
       this.worldRenderer.initialize(built.map, state, this.cameraModel);
       this.renderedWorld = world;
@@ -131,7 +130,6 @@ export class CampaignScene extends Phaser.Scene {
     this.pendingWorld = null;
     this.run?.dispose();
     this.run = null;
-    this.input.keyboard?.off('keydown-ESC', this.pause);
     this.game.events.off(Phaser.Core.Events.BLUR, this.onBlur);
     this.scale.off(Phaser.Scale.Events.RESIZE, this.resize, this);
     this.inputController?.destroy();

@@ -13,6 +13,7 @@ export type CameraBounds = {
 
 export type CameraOptions = {
   followLerp?: number;
+  zoom?: number;
   bounds?: CameraBounds | null;
 };
 
@@ -25,6 +26,7 @@ export class Camera {
   y: number;
   width: number;
   height: number;
+  readonly zoom: number;
 
   private target: CameraTarget | null = null;
   private readonly followLerp: number;
@@ -41,6 +43,7 @@ export class Camera {
     this.y = params.y ?? 0;
     this.width = params.width;
     this.height = params.height;
+    this.zoom = params.options?.zoom ?? 1;
     this.followLerp = params.options?.followLerp ?? 1;
     this.bounds = params.options?.bounds ?? null;
   }
@@ -83,15 +86,15 @@ export class Camera {
 
   worldToScreen(point: Vector2) {
     return {
-      x: point.x - (this.x - this.width / 2),
-      y: point.y - (this.y - this.height / 2),
+      x: (point.x - this.x) * this.zoom + this.width / 2,
+      y: (point.y - this.y) * this.zoom + this.height / 2,
     };
   }
 
   screenToWorld(point: Vector2) {
     return {
-      x: point.x + (this.x - this.width / 2),
-      y: point.y + (this.y - this.height / 2),
+      x: (point.x - this.width / 2) / this.zoom + this.x,
+      y: (point.y - this.height / 2) / this.zoom + this.y,
     };
   }
 
@@ -100,8 +103,8 @@ export class Camera {
       return;
     }
 
-    const halfWidth = this.width / 2;
-    const halfHeight = this.height / 2;
+    const halfWidth = Math.min(this.width / this.zoom / 2, (this.bounds.maxX - this.bounds.minX) / 2);
+    const halfHeight = Math.min(this.height / this.zoom / 2, (this.bounds.maxY - this.bounds.minY) / 2);
 
     this.x = Math.max(this.bounds.minX + halfWidth, Math.min(this.x, this.bounds.maxX - halfWidth));
     this.y = Math.max(this.bounds.minY + halfHeight, Math.min(this.y, this.bounds.maxY - halfHeight));
