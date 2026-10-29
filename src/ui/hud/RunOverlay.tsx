@@ -1,5 +1,6 @@
 import { useHudStore } from './useHudStore';
 import { ItemBonuses, RARITY_LABELS, SLOT_LABELS } from './BuildPanels';
+import { RouteChoice } from './RouteChoice';
 
 export function RunOverlay() {
   const snapshot = useHudStore((state) => state.snapshot);
@@ -21,14 +22,15 @@ export function RunOverlay() {
     <p className="muted small">Постоянные улучшения — во вкладке «Наследие». Временная экипировка и навыки начинают путь заново.</p>
     {snapshot.metaError && <p className="notice error">{snapshot.metaError}</p>}
   </div></div>;
-  if (phase === 'reward') return <div className="run-overlay"><div className="overlay-panel reward-panel">
+  if (phase === 'reward') return <div className="run-overlay reward-overlay"><div className="overlay-panel reward-panel">
     <span className="eyebrow accent">Уровень зачищен</span><h1>Твоя награда</h1><p>Возьми один предмет. Остальное останется в пепле.</p>
+    <RouteChoice snapshot={snapshot} actions={actions} />
     <div className="reward-grid">{snapshot.rewards.map((item) => <article className={`reward-card border-${item.rarity}`} key={item.id}>
       <span className={`rarity-${item.rarity} small`}>{RARITY_LABELS[item.rarity]} · {SLOT_LABELS[item.slot]}</span><h2>{item.name}</h2><p className="item-description">{item.description}</p><ItemBonuses item={item} />
       <button className="button primary" disabled={!actions} onClick={() => actions?.chooseReward(item.id)}>Выбрать</button>
     </article>)}</div>
     <div className="exploration-choice"><button className="button secondary" disabled={!actions} onClick={() => actions?.exploreArena()}>Осмотреть арену</button><p>{(snapshot.world?.caches ?? []).some((cache) => !cache.opened) ? 'На арене остался тайник с дополнительной вещью.' : 'Можно вернуться к источнику или ещё осмотреть местность.'}</p></div>
-    <p className="muted small">Перед выбором можно распределить очки навыков и сменить экипировку справа. Выбор продолжит путь; предложение сохранится, пока осматриваешь арену.</p>
+    <p className="muted small">Перед выбором можно распределить очки навыков и сменить экипировку справа. {snapshot.routeChoices.length > 1 ? `Выбор предмета продолжит путь: ${snapshot.routeChoices.find((route) => route.id === snapshot.selectedNextStageId)?.name ?? ''}. ` : 'Выбор продолжит путь. '}Предложение сохранится, пока осматриваешь арену.</p>
   </div></div>;
   if (phase === 'paused') return <div className="run-overlay pause-overlay"><div className="overlay-panel pause-panel"><span className="eyebrow">Время остановлено</span><h1>Передышка</h1><p>Смени экипировку или изучи навыки в панели справа.</p><button className="button primary" onClick={() => actions?.togglePause()}>Продолжить <kbd>Esc</kbd></button><button className="button text-button" onClick={() => actions?.returnToMenu()}>Завершить забег и вернуться в меню</button></div></div>;
   if (phase === 'won' || phase === 'lost') return <div className={`run-overlay ${phase === 'won' ? 'victory-overlay' : ''}`}><div className="overlay-panel result-panel"><span className={`eyebrow ${phase === 'won' ? 'gold' : 'muted'}`}>{phase === 'won' ? 'Все испытания пройдены' : 'Путь оборвался'}</span><h1>{phase === 'won' ? 'Пепел отступает' : 'Искра ещё жива'}</h1><p>{phase === 'won' ? 'Хранитель повержен. Наследие сделает следующий путь сильнее.' : 'Экипировка и навыки остались в этом забеге. Наследие сохраняется.'}</p><div className="result-stats"><div><strong>{snapshot.clearedLevels}/{snapshot.totalLevels}</strong><span>уровней</span></div><div><strong>{snapshot.world?.runSession.killedEnemies ?? 0}</strong><span>врагов</span></div><div><strong>{snapshot.build.level}</strong><span>ранг героя</span></div><div><strong className="gold">+{snapshot.earnedShards} ✦</strong><span>наследие</span></div></div><div className="button-row"><button className="button primary" onClick={() => actions?.startRun()}>Новый забег</button><button className="button secondary" onClick={() => actions?.returnToMenu()}>В меню</button></div>{snapshot.metaError && <p className="notice error">{snapshot.metaError}</p>}</div></div>;

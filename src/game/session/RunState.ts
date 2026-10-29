@@ -11,6 +11,8 @@ export type RunSnapshot = {
   totalLevels: number;
   clearedLevels: number;
   stage: StageInfo;
+  routeChoices: (StageInfo & { id: string })[];
+  selectedNextStageId: string | null;
   world: WorldState | null;
   build: ReturnType<RunBuild['getState']>;
   rewards: Item[];
@@ -23,6 +25,7 @@ export type RunSnapshot = {
 export type RunActions = {
   startRun(): void;
   chooseReward(id: string): void;
+  selectRoute(id: string): void;
   exploreArena(): void;
   finishExploration(): void;
   equip(id: string): void;

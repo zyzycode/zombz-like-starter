@@ -1,12 +1,12 @@
-import { CAMPAIGN } from '@/game/content/campaign/campaign';
+import { resolveCampaignStage } from '@/game/content/campaign/campaignRoutes';
 import { createArenaMap } from '@/game/content/campaign/createArenaMap';
 import { LevelBuilder } from '@/game/world/level/LevelBuilder';
 import type { LevelDefinition } from '@/game/content/levels/types';
 import type { RunSession } from '@/game/core/world/RunSession';
 import type { PlayerState } from '@/shared/types/game';
 
-export async function createCampaignLevel(depth: number, runSession: RunSession, previousPlayer?: PlayerState) {
-  const stage = CAMPAIGN[depth - 1];
+export async function createCampaignLevel(depth: number, runSession: RunSession, previousPlayer?: PlayerState, stageId?: string) {
+  const stage = resolveCampaignStage(depth, stageId);
   if (!stage) throw new Error('Неизвестный уровень');
   const map = createArenaMap(stage, depth);
   const level: LevelDefinition = {

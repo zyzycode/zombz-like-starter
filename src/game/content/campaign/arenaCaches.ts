@@ -4,6 +4,7 @@ import type { CampaignStage } from '@/game/content/campaign/campaign';
 const positions: Record<string, [number, number]> = {
   'grove-1': [800, 288],
   'grove-2': [736, 544],
+  'grove-alt': [800, 352],
   'ruins-1': [800, 208],
   'ruins-2': [224, 576],
   'frost-1': [848, 288],

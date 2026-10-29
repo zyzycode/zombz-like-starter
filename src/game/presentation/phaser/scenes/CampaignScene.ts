@@ -42,6 +42,7 @@ export class CampaignScene extends Phaser.Scene {
       exploreArena: () => act(() => run.exploreArena()),
       finishExploration: () => act(() => run.finishExploration()),
       chooseReward: (id) => act(() => run.chooseReward(id)),
+      selectRoute: (id) => act(() => run.selectRoute(id)),
       unequip: (slot) => act(() => run.unequip(slot)),
       equip: (id) => act(() => run.equip(id)), learn: (id) => act(() => run.learn(id)),
       buyMetaUpgrade: (id) => act(() => run.buyMetaUpgrade(id)),

@@ -7,6 +7,7 @@ import { GameWorld } from '@/game/core/world/GameWorld';
 import type { BuiltLevel } from '@/game/world/level/types';
 import type { InputState, PlayerState } from '@/shared/types/game';
 import { CAMPAIGN } from '@/game/content/campaign/campaign';
+import { getRouteChoices, resolveCampaignStage } from '@/game/content/campaign/campaignRoutes';
 import { createCampaignLevel } from '@/game/session/createCampaignLevel';
 import type { RunPhase, RunSnapshot } from '@/game/session/RunState';
 
@@ -18,6 +19,8 @@ export class RunController {
   private world: GameWorld | null = null;
   private builtLevel: BuiltLevel | null = null;
   private depth = 1;
+  private stageId = CAMPAIGN[0].id;
+  private selectedNextStageId: string | null = null;
   private clearedLevels = 0;
   private lastKills = 0;
   private lastEliteKills = 0;
@@ -41,7 +44,9 @@ export class RunController {
   getState(): RunSnapshot {
     return {
       phase: this.phase, depth: this.depth, totalLevels: CAMPAIGN.length,
-      clearedLevels: this.clearedLevels, stage: CAMPAIGN[this.depth - 1],
+      clearedLevels: this.clearedLevels, stage: resolveCampaignStage(this.depth, this.stageId)!,
+      routeChoices: getRouteChoices(this.depth + 1).map(({ id, name, biome, description, color }) => ({ id, name, biome, description, color })),
+      selectedNextStageId: this.selectedNextStageId,
       world: this.world?.getState() ?? null, build: this.build.getState(), rewards: structuredClone(this.rewards),
       lastCacheItem: this.lastCacheItem ? structuredClone(this.lastCacheItem) : null,
       meta: this.meta.getState(), metaError: this.meta.getError(), error: this.error, earnedShards: this.earnedShards,
@@ -53,6 +58,8 @@ export class RunController {
     this.session = new RunSession({ playerClassId: 'wanderer' });
     this.build = new RunBuild(this.meta.getState().ranks);
     this.depth = 1;
+    this.stageId = CAMPAIGN[0].id;
+    this.selectedNextStageId = null;
     this.clearedLevels = 0;
     this.lastKills = 0;
     this.earnedShards = 0;
@@ -94,6 +101,7 @@ export class RunController {
         this.clearedLevels += 1;
         this.build.gainXp(25 + this.depth * 5);
         this.rewards = this.build.createRewards(this.depth);
+        this.selectedNextStageId = getRouteChoices(this.depth + 1)[0]?.id ?? null;
         this.phase = 'reward';
       }
     }
@@ -107,13 +115,23 @@ export class RunController {
     if (this.phase === 'exploring') this.phase = 'reward';
   }
 
+  selectRoute(id: string) {
+    if (this.phase !== 'reward' || !getRouteChoices(this.depth + 1).some((stage) => stage.id === id)) return;
+    this.selectedNextStageId = id;
+  }
+
   async chooseReward(id: string) {
-    if (this.phase !== 'reward' || !this.build.claimReward(id)) return;
+    if (this.phase !== 'reward') return;
+    const nextStage = this.selectedNextStageId ? resolveCampaignStage(this.depth + 1, this.selectedNextStageId) : undefined;
+    if (this.depth < CAMPAIGN.length && !nextStage) return;
+    if (!this.build.claimReward(id)) return;
     this.rewards = [];
     this.world?.applyBuild(this.build.getState().stats);
     if (this.depth === CAMPAIGN.length) { this.finish(true); return; }
     this.world?.restoreBetweenLevels();
     const player = this.world?.getState().player;
+    this.stageId = nextStage!.id;
+    this.selectedNextStageId = null;
     this.depth += 1;
     await this.loadLevel(player);
   }
@@ -156,6 +174,7 @@ export class RunController {
     this.world = null;
     this.builtLevel = null;
     this.rewards = [];
+    this.selectedNextStageId = null;
     this.lastCacheItem = null;
     this.error = null;
     this.build = new RunBuild(this.meta.getState().ranks);
@@ -179,7 +198,7 @@ export class RunController {
     this.builtLevel = null;
     this.error = null;
     try {
-      const builtLevel = await this.buildLevel(this.depth, this.session, player);
+      const builtLevel = await this.buildLevel(this.depth, this.session, player, this.stageId);
       if (generation !== this.generation) return;
       const world = new GameWorld({ builtLevel, runSession: this.session, mode: 'campaign', runResultGateway: { submitRunResult: async () => {} } });
       const build = this.build.getState();

@@ -30,6 +30,14 @@ export const ARENA_LAYOUTS: Record<string, ArenaLayout> = {
     islands: sites([288, 240], [544, 176], [288, 540], [624, 520], [224, 400]),
     restoration: { x: 800, y: 352 },
   },
+  'grove-alt': {
+    story: 'burial',
+    trails: [trail(4.2, [0, 11], [30, 11]), trail(3.2, [15, 11], [15, 17], [5, 17]),
+      trail(3.2, [9, 11], [9, 5], [24, 5], [24, 11]), trail(3.2, [15, 17], [25, 17], [25, 11])],
+    clearings: [{ x: 15, y: 11, radius: 4 }, { x: 25, y: 11, radius: 2.8 }, { x: 5, y: 17, radius: 2.8 }],
+    islands: sites([352, 224], [672, 224], [352, 480], [672, 480], [480, 176]),
+    restoration: { x: 160, y: 544 },
+  },
   'ruins-1': {
     story: 'courtyard',
     trails: [trail(4.5, [0, 11], [30, 11]), trail(4.5, [15, 0], [15, 22]), trail(3, [8, 6], [22, 6], [22, 16], [8, 16], [8, 6])],
