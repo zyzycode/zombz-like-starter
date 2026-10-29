@@ -4,7 +4,7 @@ import { META_UPGRADES } from '@/game/core/meta/MetaProgression';
 import type { EquipmentPreview, Item, ItemSlot, Stats } from '@/game/core/progression/types';
 import type { RunActions, RunSnapshot } from '@/game/session/RunState';
 
-export const SLOT_LABELS: Record<ItemSlot, string> = { weapon: 'Оружие', armor: 'Доспех', charm: 'Талисман' };
+export const SLOT_LABELS: Record<ItemSlot, string> = { weapon: 'Оружие', armor: 'Доспех', helmet: 'Шлем', boots: 'Сапоги', charm: 'Талисман' };
 export const RARITY_LABELS = { common: 'Обычное', rare: 'Редкое', epic: 'Эпическое' };
 const STAT_LABELS: Record<keyof Stats, string> = {
   maxHp: 'здоровье', damage: 'урон', moveSpeed: 'скорость', maxMana: 'мана',
@@ -75,7 +75,7 @@ export function InventoryPanel({ snapshot, actions }: PanelProps) {
       {(Object.keys(SLOT_LABELS) as ItemSlot[]).map((slot) => {
         const item = build.inventory.find((candidate) => candidate.id === build.equipment[slot]);
         return <div className="equipment-row" key={slot}><span>{SLOT_LABELS[slot]}</span>
-          {item ? <button type="button" className={`equipment-name rarity-${item.rarity}`} onClick={() => inspect(item)} aria-label={`Осмотреть: ${item.name}`}>{item.name}</button> : <span className="muted">Базовое</span>}
+          {item ? <button type="button" className={`equipment-name rarity-${item.rarity}`} onClick={() => inspect(item)} aria-label={`Осмотреть: ${item.name}`}>{item.name}</button> : <span className="muted">{slot === 'helmet' || slot === 'boots' ? 'Не надето' : 'Базовое'}</span>}
         </div>;
       })}
     </section>
@@ -95,8 +95,9 @@ export function InventoryPanel({ snapshot, actions }: PanelProps) {
     {selected && <section ref={detailRef} tabIndex={-1} className="inventory-detail" aria-label={`Выбранная вещь: ${selected.name}`}>
       <h3 className={`rarity-${selected.rarity}`}>{selected.name}</h3>
       <p className="muted small">{SLOT_LABELS[selected.slot]} · {RARITY_LABELS[selected.rarity]}</p>
+      <p className="item-description">{selected.description}</p>
       <ItemBonuses item={selected} />
-      {!equipped && <p className="replacement-caption">Заменит: {replaced?.name ?? 'базовое снаряжение'}</p>}
+      {!equipped && <p className="replacement-caption">{replaced ? `Заменит: ${replaced.name}` : selected.slot === 'helmet' || selected.slot === 'boots' ? 'Займёт свободный слот.' : 'Заменит базовое снаряжение.'}</p>}
       {preview && <EquipmentComparison current={build.stats} preview={preview} removing={equipped} />}
       <button type="button" className="button secondary compact" disabled={!actions || !canEdit || !preview} onClick={() => equipped ? actions?.unequip(selected.slot) : actions?.equip(selected.id)}>
         {equipped ? 'Снять в рюкзак' : 'Надеть'}

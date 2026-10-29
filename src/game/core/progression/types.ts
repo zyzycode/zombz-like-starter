@@ -8,13 +8,23 @@ export type Stats = {
   armor: number;
 };
 
-export type ItemSlot = 'weapon' | 'armor' | 'charm';
+export const ITEM_SLOTS = ['weapon', 'armor', 'charm', 'helmet', 'boots'] as const;
+export type ItemSlot = typeof ITEM_SLOTS[number];
 export type Rarity = 'common' | 'rare' | 'epic';
 export type SkillId = 'warrior1' | 'warrior2' | 'mage1' | 'mage2' | 'survivor1' | 'survivor2';
 export type MetaUpgradeId = 'vitality' | 'might' | 'wisdom';
 export type MetaRanks = Record<MetaUpgradeId, number>;
+export type ItemDefinition = {
+  id: string;
+  name: string;
+  description: string;
+  slot: ItemSlot;
+  baseBonuses: Readonly<Partial<Stats>>;
+};
 export type Item = {
   id: string;
+  definitionId: string;
+  description: string;
   name: string;
   slot: ItemSlot;
   rarity: Rarity;

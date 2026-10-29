@@ -1,3 +1,5 @@
+import { ITEM_DEFINITIONS } from '@/game/content/items/itemCatalog';
+import { ITEM_SLOTS } from '@/game/core/progression/types';
 import { SKILLS } from '@/game/core/progression/skills';
 import type { EquipmentPreview, EquipmentPreviews, BuildState, Item, ItemSlot, MetaRanks, Rarity, SkillId, Stats } from '@/game/core/progression/types';
 
@@ -5,13 +7,6 @@ export { SKILLS } from '@/game/core/progression/skills';
 export type { BuildState, Item, ItemSlot, MetaRanks, Rarity, SkillId, Stats } from '@/game/core/progression/types';
 
 const BASE_STATS: Stats = { maxHp: 100, damage: 50, moveSpeed: 280, maxMana: 100, manaRegen: 10, spellPower: 1, armor: 0 };
-const SLOTS: ItemSlot[] = ['weapon', 'armor', 'charm'];
-const NAMES: Record<ItemSlot, string[]> = {
-  weapon: ['Клинок странника', 'Топор охотника', 'Сабля хранителя'],
-  armor: ['Куртка разведчика', 'Кольчуга стража', 'Панцирь предков'],
-  charm: ['Осколок луны', 'Печать пламени', 'Сердце эфира'],
-};
-
 /** Temporary character build. It has no world, rendering or persistence dependencies. */
 export class RunBuild {
   private level = 1;
@@ -50,22 +45,30 @@ export class RunBuild {
     }
   }
 
-  /** Each offer has one weapon, one armour and one charm, with random rarity and bonuses. */
+  /** Alternate accessory slots so every offer stays a choice of three distinct slots. */
   createRewards(depth: number): Item[] {
     if (this.rewards.length) return structuredClone(this.rewards);
     const tier = Math.max(1, Math.min(10, Math.floor(Number.isFinite(depth) ? depth : 1)));
+    const slots: readonly ItemSlot[] = tier % 2 === 1
+      ? ['weapon', 'armor', 'charm'] : ['weapon', 'helmet', 'boots'];
     this.rewardSequence += 1;
-    this.rewards = SLOTS.map((slot, index) => {
+    this.rewards = slots.map((slot, index) => {
       const roll = this.roll();
       const rarity: Rarity = roll < 0.12 + tier * 0.015 ? 'epic' : roll < 0.43 + tier * 0.02 ? 'rare' : 'common';
       const multiplier = rarity === 'epic' ? 1.8 : rarity === 'rare' ? 1.35 : 1;
       const strength = (1 + tier * 0.2) * multiplier;
-      const bonuses: Partial<Stats> = slot === 'weapon'
-        ? { damage: Math.round(12 * strength), spellPower: this.roll() < 0.4 ? 0.1 * multiplier : 0 }
-        : slot === 'armor'
-          ? { maxHp: Math.round(18 * strength), armor: Math.round(2 * strength) }
-          : { maxMana: Math.round(15 * strength), spellPower: Math.round(15 * strength) / 100, manaRegen: Math.round(2 * multiplier) };
-      return { id: `reward-${this.rewardSequence}-${index}`, name: NAMES[slot][Math.floor(this.roll() * NAMES[slot].length)], slot, rarity, bonuses };
+      const candidates = ITEM_DEFINITIONS.filter((item) => item.slot === slot);
+      const definition = candidates[Math.floor(this.roll() * candidates.length)];
+      if (!definition) throw new Error(`Нет предметов для слота ${slot}`);
+      const bonuses: Partial<Stats> = {};
+      for (const key of Object.keys(definition.baseBonuses) as (keyof Stats)[]) {
+        const value = (definition.baseBonuses[key] ?? 0) * strength;
+        bonuses[key] = key === 'spellPower' ? Math.round(value * 100) / 100 : Math.round(value);
+      }
+      return {
+        id: `reward-${this.rewardSequence}-${index}`, definitionId: definition.id,
+        name: definition.name, description: definition.description, slot, rarity, bonuses,
+      };
     });
     return structuredClone(this.rewards);
   }
@@ -99,7 +102,7 @@ export class RunBuild {
     for (const item of this.inventory) {
       equip[item.id] = this.previewEquipment({ ...this.equipment, [item.slot]: item.id }, current);
     }
-    for (const slot of SLOTS) {
+    for (const slot of ITEM_SLOTS) {
       if (!this.equipment[slot]) continue;
       const equipment = { ...this.equipment };
       delete equipment[slot];

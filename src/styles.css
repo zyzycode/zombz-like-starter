@@ -124,8 +124,6 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
 .reward-panel { width: min(100%, 880px); padding: 10px 0; }
 .reward-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-top: 27px; text-align: left; }
 .reward-card { padding: 22px 18px 18px; display: flex; flex-direction: column; background: #192a21; border-width: 1px; border-style: solid; border-radius: 9px; box-shadow: 0 12px 25px #0003; }
-.reward-card > .eyebrow { font-size: 8px; }
-.reward-symbol { font-size: 35px; margin: 24px 0 21px; }
 .reward-card h2 { font: 400 19px/1.3 Georgia, serif; min-height: 50px; margin: 7px 0 2px; }
 .reward-card .item-bonuses { flex: 1; font-size: 12px; margin: 13px 0 24px; }
 .reward-card .button { width: 100%; }
@@ -183,7 +181,6 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
   .menu-controls, .journey-line { gap: 8px; }
   .reward-grid { grid-template-columns: 1fr; }
   .reward-card { padding: 12px; }
-  .reward-symbol { display: none; }
   .reward-card h2 { min-height: 0; font-size: 18px; }
   .reward-card .item-bonuses { margin: 6px 0 12px; }
   .result-stats { grid-template-columns: repeat(2, 1fr); }
@@ -229,3 +226,5 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
 .stat-gain { color: #8cdbc0; }
 .stat-loss { color: #f0a08c; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+.item-description { font-size: 12px; line-height: 1.5; color: #b7c4bb; margin: 8px 0; }

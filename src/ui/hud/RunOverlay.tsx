@@ -21,7 +21,7 @@ export function RunOverlay() {
   if (phase === 'reward') return <div className="run-overlay"><div className="overlay-panel reward-panel">
     <span className="eyebrow accent">Уровень зачищен</span><h1>Твоя награда</h1><p>Возьми один предмет. Остальное останется в пепле.</p>
     <div className="reward-grid">{snapshot.rewards.map((item) => <article className={`reward-card border-${item.rarity}`} key={item.id}>
-      <span className={`eyebrow rarity-${item.rarity}`}>{RARITY_LABELS[item.rarity]}</span><div className={`reward-symbol rarity-${item.rarity}`} aria-hidden="true">{item.slot === 'weapon' ? '⚔' : item.slot === 'armor' ? '◇' : '✦'}</div><span className="muted small">{SLOT_LABELS[item.slot]}</span><h2>{item.name}</h2><ItemBonuses item={item} />
+      <span className={`rarity-${item.rarity} small`}>{RARITY_LABELS[item.rarity]} · {SLOT_LABELS[item.slot]}</span><h2>{item.name}</h2><p className="item-description">{item.description}</p><ItemBonuses item={item} />
       <button className="button primary" disabled={!actions} onClick={() => actions?.chooseReward(item.id)}>Выбрать</button>
     </article>)}</div>
     <p className="muted small">Перед выбором можно распределить очки навыков и сменить экипировку справа. Выбор продолжит путь.</p>
