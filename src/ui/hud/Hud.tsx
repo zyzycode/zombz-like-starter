@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ELITE_BONUS_XP } from '@/game/core/enemies/eliteModifiers';
 import { ACTIVE_ABILITIES } from '@/game/core/combat/activeAbilities';
 import { useHudStore } from './useHudStore';
 import { ControlsPanel, InventoryPanel, MetaPanel, SkillsPanel } from './BuildPanels';
@@ -35,6 +36,7 @@ export function Hud() {
   const mana = abilities?.mana ?? build.stats.maxMana;
   const caches = world?.caches ?? [];
   const openedCaches = caches.filter((cache) => cache.opened).length;
+  const eliteObjective = world?.eliteObjective;
   const playing = phase === 'playing';
   return <>
     <header className="sidebar-header"><span className="eyebrow">Пепельный путь <b>α</b></span><h2>{phase === 'menu' ? 'Странник' : snapshot.stage.biome}</h2><div className="section-caption muted small"><span>{phase === 'menu' ? 'Готов к новому пути' : `Уровень ${snapshot.depth} / ${snapshot.totalLevels}`}</span><span className="gold">✦ {snapshot.meta.shards}</span></div></header>
@@ -54,6 +56,9 @@ export function Hud() {
       <Ability hotkey="C" name="Восстановление" cooldown={abilities?.mendCooldownMs ?? 0} cost={ACTIVE_ABILITIES.mend.manaCost} mana={mana} locked={!build.unlockedAbilities.includes('mend')} fullHealth={!world || world.player.hp >= world.player.maxHp} description="Изучи в ветке Выживания · восстановление 35% здоровья · 12 с" />
     </section>
     {world && <div className="wave-line"><span>Волна {world.wave.currentWaveIndex}/{world.wave.maxWaves}</span><span>{world.wave.activeEnemies > 0 ? `Врагов: ${world.wave.activeEnemies}` : world.wave.nextWaveInMs > 0 ? `Через ${(world.wave.nextWaveInMs / 1000).toFixed(1)}с` : 'Зачищено'}</span></div>}
+    {eliteObjective && eliteObjective.total > 0 && <div className="elite-objective" title="Броня снижает физический урон; магия действует полностью. Стремительная элита быстрее движется, но не ускоряет замах.">
+      <span>{eliteObjective.defeated >= eliteObjective.total ? 'Элита повержена' : 'Победи элиту'} <b>{eliteObjective.defeated}/{eliteObjective.total}</b></span><span>+{ELITE_BONUS_XP} опыта за врага</span>
+    </div>}
     {caches.length > 0 && <div className="cache-progress"><span>Тайники {openedCaches}/{caches.length}</span><span>{openedCaches < caches.length ? 'Найди · открой на E' : 'Всё найдено'}</span></div>}
     {snapshot.lastCacheItem && <p className="cache-find" role="status">В рюкзаке: <strong className={`rarity-${snapshot.lastCacheItem.rarity}`}>{snapshot.lastCacheItem.name}</strong></p>}
     {phase === 'exploring' && <button className="button primary pause-button" onClick={() => actions?.finishExploration()}>К наградам <kbd>Esc</kbd></button>}

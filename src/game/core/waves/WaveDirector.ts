@@ -1,8 +1,10 @@
+import type { EliteModifierId } from '@/shared/types/game';
 import type { EnemyArchetypeId } from '@/game/config/enemies/enemyArchetypes';
 
 export type WaveSpawnEntry = {
   archetypeId: EnemyArchetypeId;
   count: number;
+  elite?: EliteModifierId;
 };
 
 export type WaveDefinition = {

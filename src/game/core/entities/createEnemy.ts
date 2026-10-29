@@ -1,23 +1,26 @@
+import { ELITE_MODIFIERS } from '@/game/core/enemies/eliteModifiers';
 import { Enemy } from '@/game/core/characters/Enemy';
 import { enemyArchetypes, type EnemyArchetypeId } from '@/game/config/enemies/enemyArchetypes';
-import type { EnemyState } from '@/shared/types/game';
+import type { EliteModifierId, EnemyState } from '@/shared/types/game';
 
 /** Создаёт врага из archetype-конфига. */
-export function createEnemy(id: string, x: number, y: number, archetypeId: EnemyArchetypeId = 'grunt') {
+export function createEnemy(id: string, x: number, y: number, archetypeId: EnemyArchetypeId = 'grunt', elite?: EliteModifierId) {
   const archetype = enemyArchetypes[archetypeId];
+  const modifier = elite ? ELITE_MODIFIERS[elite] : undefined;
+  const hp = Math.round(archetype.baseStats.hp * (modifier?.hpMultiplier ?? 1));
   const primaryAttack = archetype.attackDefinitions[0];
   const state: EnemyState = {
-    id,
+    id, elite,
     position: { x, y },
-    speed: archetype.moveSpeed,
+    speed: archetype.moveSpeed * (modifier?.speedMultiplier ?? 1),
     mass: archetype.baseStats.mass,
-    hp: archetype.baseStats.hp,
-    maxHp: archetype.baseStats.hp,
+    hp,
+    maxHp: hp,
     radius: archetype.radius,
     facing: { x: 0, y: 1 },
     team: 'enemy',
     attack: {
-      config: { ...primaryAttack.config },
+      config: { ...primaryAttack.config, damage: primaryAttack.config.damage * (modifier?.damageMultiplier ?? 1) },
       runtime: {
         isActive: false,
         elapsedMs: 0,

@@ -24,6 +24,7 @@ export class WaveSystem {
       spawns: wave.spawns.map((spawn) => ({
         archetypeId: spawn.archetypeId,
         count: spawn.count,
+        elite: spawn.elite,
       })),
     }));
 
@@ -101,6 +102,7 @@ export class WaveSystem {
             position.x,
             position.y,
             spawn.archetypeId,
+            spawn.elite,
           ),
         );
       }

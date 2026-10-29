@@ -238,3 +238,7 @@ kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight:
 .cache-find strong { font-weight: 500; }
 .exploration-choice { margin-top: 20px; }
 .exploration-choice p { margin: 8px auto 0; max-width: 460px; font-size: 12px; line-height: 1.5; color: #b9c7be; }
+
+.elite-objective { display: flex; justify-content: space-between; gap: 8px; padding: 0 20px 8px; font-size: 10px; color: #e8cc91; }
+.elite-objective b { font-weight: 500; font-variant-numeric: tabular-nums; }
+.elite-objective > span:last-child { color: #c9bd9f; }

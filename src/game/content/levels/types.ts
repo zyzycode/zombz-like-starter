@@ -1,6 +1,6 @@
 import type { EnemyArchetypeId } from '@/game/config/enemies/enemyArchetypes';
 import type { MapMarkerDefinition } from '@/game/content/maps/types';
-import type { ResourceNodeType } from '@/shared/types/game';
+import type { EliteModifierId, ResourceNodeType } from '@/shared/types/game';
 
 export type LevelWaveDefinition = {
   waveIndex: number;
@@ -9,6 +9,7 @@ export type LevelWaveDefinition = {
   spawns: Array<{
     archetypeId: EnemyArchetypeId;
     count: number;
+    elite?: EliteModifierId;
   }>;
 };
 

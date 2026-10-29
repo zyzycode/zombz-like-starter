@@ -14,6 +14,7 @@ import type {
 } from '@/shared/types/game';
 
 export type WorldState = {
+  eliteObjective?: { total: number; defeated: number };
   status?: 'active' | 'cleared' | 'dead';
   projectiles?: ProjectileState[];
   caches?: ExplorationCacheState[];

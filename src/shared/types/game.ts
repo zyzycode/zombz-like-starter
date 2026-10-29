@@ -159,7 +159,8 @@ export type ProjectileState = {
 
 export type PlayerState = CharacterRuntime & { abilities?: AbilityState };
 
-export type EnemyState = CharacterRuntime & { archetypeId?: string };
+export type EliteModifierId = 'armored' | 'swift';
+export type EnemyState = CharacterRuntime & { archetypeId?: string; elite?: EliteModifierId };
 
 /** Состояние разрушаемого объекта на карте. */
 export type DestructibleState = {

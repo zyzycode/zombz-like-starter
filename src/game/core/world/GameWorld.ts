@@ -36,6 +36,8 @@ export class GameWorld {
   private readonly mode: 'extraction' | 'campaign';
   private status: 'active' | 'cleared' | 'dead' = 'active';
   private clearedWaves = 0;
+  private defeatedElites = 0;
+  private readonly totalElites: number;
   private readonly abilities = new AbilitySystem();
   private readonly caches: CacheSystem;
   private openedCaches: string[] = [];
@@ -85,6 +87,9 @@ export class GameWorld {
     this.mode = params.mode ?? 'extraction';
     const { builtLevel } = params;
     const state = builtLevel.initialState;
+    this.totalElites = builtLevel.level.rules.waves.enabled
+      ? builtLevel.level.rules.waves.table.reduce((total, wave) => total + wave.spawns.reduce((count, spawn) => count + (spawn.elite ? spawn.count : 0), 0), 0)
+      : 0;
     this.caches = new CacheSystem(builtLevel.map.caches ?? []);
     this.restoration = new RestorationSystem(state.restorationSites ?? []);
     this.hazards = new HazardSystem(builtLevel.map.hazards ?? []);
@@ -117,6 +122,7 @@ export class GameWorld {
   getState(): WorldState {
     return structuredClone({
       status: this.status,
+      eliteObjective: { total: this.totalElites, defeated: this.defeatedElites },
       projectiles: this.projectiles.getState(),
       caches: this.caches.getState(),
       restorationSites: this.restoration.getState(),
@@ -264,6 +270,7 @@ export class GameWorld {
     this.droppedResources = interactionResult.droppedResources;
     this.interactWithEnvironment(input);
 
+    this.defeatedElites += this.enemies.filter((enemy) => !enemy.isAlive && enemy.elite).length;
     const cleanupResult = this.cleanupSystem.cleanup({
       enemies: this.enemies,
       destructibles: this.destructibles,

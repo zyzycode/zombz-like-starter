@@ -1,12 +1,14 @@
+import { ELITE_MODIFIERS } from '@/game/core/enemies/eliteModifiers';
 import { Character, directionToVector } from '@/game/core/characters/Character';
 import { steerAroundCollision } from '@/game/core/enemies/steerAroundCollision';
 import type { CollisionSteeringMemory } from '@/game/core/enemies/steerAroundCollision';
 import type { AttackController } from '@/game/core/combat/AttackController';
 import type { EnemyArchetype } from '@/game/core/enemies/EnemyArchetype';
-import type { StatusEffect, AttackPayload, EnemyState, PlayerState, Vector2 } from '@/shared/types/game';
+import type { EliteModifierId, DamageType, StatusEffect, AttackPayload, EnemyState, PlayerState, Vector2 } from '@/shared/types/game';
 
 /** Базовый класс врага, совместимый с общей системой состояний и анимаций. */
 export class Enemy extends Character {
+  readonly elite: EliteModifierId | undefined;
   private readonly detourSide: number;
   private readonly steering: CollisionSteeringMemory = { direction: { x: 0, y: 0 }, remainingMs: 0 };
   constructor(
@@ -14,6 +16,7 @@ export class Enemy extends Character {
     readonly archetype: EnemyArchetype,
   ) {
     super(state);
+    this.elite = state.elite;
     this.detourSide = [...state.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 2 ? 1 : -1;
   }
 
@@ -77,6 +80,11 @@ export class Enemy extends Character {
     return true;
   }
 
+  override applyDamage(amount: number, damageType: DamageType) {
+    const multiplier = this.elite && damageType === 'physical' ? ELITE_MODIFIERS[this.elite].physicalDamageMultiplier : 1;
+    super.applyDamage(amount * multiplier, damageType);
+  }
+
   override applyStatus(effect: StatusEffect) {
     super.applyStatus({ ...effect, durationMs: effect.durationMs * (this.archetype.stunDurationMultiplier ?? 1) });
   }
@@ -90,6 +98,6 @@ export class Enemy extends Character {
   }
 
   toState(): EnemyState {
-    return { ...this.toRuntime(), archetypeId: this.archetype.id };
+    return { ...this.toRuntime(), archetypeId: this.archetype.id, elite: this.elite };
   }
 }

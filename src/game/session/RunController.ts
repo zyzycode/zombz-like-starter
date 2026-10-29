@@ -1,3 +1,4 @@
+import { ELITE_BONUS_XP } from '@/game/core/enemies/eliteModifiers';
 import { RunBuild } from '@/game/core/progression/RunBuild';
 import { MetaProgression } from '@/game/core/meta/MetaProgression';
 import type { ItemSlot, MetaUpgradeId, SkillId } from '@/game/core/progression/types';
@@ -19,6 +20,7 @@ export class RunController {
   private depth = 1;
   private clearedLevels = 0;
   private lastKills = 0;
+  private lastEliteKills = 0;
   private lastCacheItem: RunSnapshot['lastCacheItem'] = null;
   private rewards: RunSnapshot['rewards'] = [];
   private error: string | null = null;
@@ -80,6 +82,11 @@ export class RunController {
       if (kills > this.lastKills) {
         this.build.gainXp((kills - this.lastKills) * 18);
         this.lastKills = kills;
+      }
+      const eliteKills = state.eliteObjective?.defeated ?? 0;
+      if (eliteKills > this.lastEliteKills) {
+        this.build.gainXp((eliteKills - this.lastEliteKills) * ELITE_BONUS_XP);
+        this.lastEliteKills = eliteKills;
       }
       if (state.status === 'dead') {
         this.finish(false);
@@ -166,6 +173,7 @@ export class RunController {
   private async loadLevel(player?: PlayerState) {
     const generation = ++this.generation;
     this.phase = 'loading';
+    this.lastEliteKills = 0;
     this.lastCacheItem = null;
     this.world = null;
     this.builtLevel = null;
