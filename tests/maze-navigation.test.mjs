@@ -11,6 +11,7 @@ import { createPlayer } from '../src/game/core/entities/createPlayer.ts';
 import { createEnemy } from '../src/game/core/entities/createEnemy.ts';
 import { RunSession } from '../src/game/core/world/RunSession.ts';
 import { CAMPAIGN } from '../src/game/content/campaign/campaign.ts';
+import { getRouteChoices } from '../src/game/content/campaign/campaignRoutes.ts';
 import { createCampaignLevel } from '../src/game/session/createCampaignLevel.ts';
 
 const rect = (id, x, y, width, height) => ({ id, kind: 'rect', position: { x, y }, width, height });
@@ -85,20 +86,23 @@ test('central visibility blocks melee and magical control through walls, while p
   assert.equal(target.hp, target.maxHp - 20);
 });
 
-test('three large authored mazes have traversable routes from spawn to every interaction and enemy marker', async () => {
-  const stages = CAMPAIGN.map((stage, index) => ({ stage, depth: index + 1 })).filter(({ stage }) => stage.id.endsWith('-maze'));
+test('every campaign location and branch is large and traversable to every interaction and enemy marker', async () => {
+  const stages = [...new Map(CAMPAIGN.flatMap((_, index) => getRouteChoices(index + 1)
+    .map(stage => [stage.id, { stage, depth: index + 1 }]))).values()];
   assert.equal(CAMPAIGN.length, 9);
-  assert.equal(stages.length, 3);
+  assert.equal(stages.length, 11);
   for (const { stage, depth } of stages) {
-    const built = await createCampaignLevel(depth, new RunSession({ playerClassId: 'wanderer' }));
+    const built = await createCampaignLevel(depth, new RunSession({ playerClassId: 'wanderer' }), undefined, stage.id);
     const map = built.map;
-    assert.ok(map.width >= 1920 && map.height >= 1408, `${stage.id}: large map dimensions`);
+    assert.equal(map.width, 3456, `${stage.id}: large map width`);
+    assert.equal(map.height, 2592, `${stage.id}: large map height`);
     assert.ok(map.collision.some(shape => shape.kind === 'rect'), `${stage.id}: physical walls`);
     const { navigation, resolvePosition } = navigationFor(map.width, map.height, map.collision);
     const start = built.initialState.player.position;
     const destinations = [...map.markers.filter(marker => marker.kind === 'enemy_spawn'),
       ...(map.obelisks ?? []), ...(map.caches ?? []), ...(map.restorationSites ?? [])];
-    assert.ok(map.obelisks?.length >= 2 && map.caches?.length >= 1);
+    assert.ok(map.caches?.length >= 1);
+    if (stage.id.endsWith('-maze')) assert.ok(map.obelisks?.length >= 2);
     for (const goal of destinations) followPath(navigation, resolvePosition, start, goal.position, `${stage.id}/${goal.id}`);
   }
 });

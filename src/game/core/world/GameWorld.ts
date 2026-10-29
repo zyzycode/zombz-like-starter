@@ -250,6 +250,7 @@ export class GameWorld {
 
     this.abilities.update({ player: this.player, input, enemies: this.enemies, projectiles: this.projectiles });
     const enemyHits = this.enemyAiSystem.update({
+      chaseRange: this.mode === 'campaign' ? Math.hypot(this.map.width, this.map.height) : undefined,
       navigation: this.navigation,
       projectiles: this.projectiles,
       enemies: this.enemies,

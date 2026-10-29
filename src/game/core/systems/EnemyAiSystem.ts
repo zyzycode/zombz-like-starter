@@ -17,12 +17,13 @@ export class EnemyAiSystem {
     projectiles?: ProjectileSystem;
     resolvePosition: (nextPosition: Vector2, radius: number) => Vector2;
     navigation?: NavigationGrid;
+    chaseRange?: number;
   }) {
     const enemyHits: AttackPayload[] = [];
 
     for (const enemy of params.enemies) {
       const aiProfile = enemy.archetype.aiProfile;
-      const chaseRange = enemy.archetype.aggroRange;
+      const chaseRange = params.chaseRange ?? enemy.archetype.aggroRange;
 
       enemy.update({
         player: params.player,

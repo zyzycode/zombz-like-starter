@@ -1,14 +1,11 @@
 import type { CollisionShapeDefinition, GroundStampDefinition, MapDefinition, MapPropDefinition } from '@/game/content/maps/types';
 import type { CampaignStage } from '@/game/content/campaign/campaign';
 import { environmentAssets, PROP_FRAMES, type EnvironmentTheme } from '@/game/content/campaign/flareEnvironmentArt';
-import { createMazeFloor, MAZE_CELL, MAZE_COLUMNS, MAZE_HEIGHT, MAZE_LAYOUTS, MAZE_ROWS, MAZE_WIDTH, mazeRoomPosition } from '@/game/content/campaign/mazeLayouts';
-
-export function isMazeStage(stageId: string): boolean { return Object.prototype.hasOwnProperty.call(MAZE_LAYOUTS, stageId); }
+import { campaignMazeLayout, createMazeFloor, MAZE_CELL, MAZE_COLUMNS, MAZE_HEIGHT, MAZE_ROWS, MAZE_WIDTH, mazeRoomPosition } from '@/game/content/campaign/mazeLayouts';
 
 /** Labyrinth content stays an ordinary map: the same collision rectangles drive navigation and walls. */
 export function createMazeMap(stage: CampaignStage, depth: number): MapDefinition {
-  const layout = MAZE_LAYOUTS[stage.id];
-  if (!layout) throw new Error(`Missing maze layout: ${stage.id}`);
+  const layout = campaignMazeLayout(stage.id, stage.biomeId);
   const floor = createMazeFloor(layout);
   const theme: EnvironmentTheme = stage.biomeId === 'grove' ? 'grassland' : stage.biomeId === 'frost' ? 'snowplains' : 'dungeon';
   const collision: CollisionShapeDefinition[] = [];
@@ -28,9 +25,9 @@ export function createMazeMap(stage: CampaignStage, depth: number): MapDefinitio
         const frame = trees ? [12,1,8,14][(row + tile) % 4]
           : PROP_FRAMES[theme][theme === 'dungeon' ? (tile % 2 ? 64 : 65) : 128 + (row + tile) % 4];
         props.push({ id: `wall-art-${row}-${tile}`, kind: trees ? 'tree' : 'ruin',
-          position: { x, y: y + 16 }, radius: 32, width: 96, height: trees ? 180 : 140,
+          position: { x, y: y + 24 }, radius: 48, width: 144, height: trees ? 270 : 210,
           visual: { textureKey: `flare-${theme}-${trees ? 'trees' : 'props'}`, frame,
-            scale: theme === 'snowplains' ? 1.6 : 1.1, origin: { x: .5, y: .875 } } });
+            scale: theme === 'snowplains' ? 2.4 : 1.65, origin: { x: .5, y: .875 } } });
       }
     }
   }
@@ -46,13 +43,13 @@ export function createMazeMap(stage: CampaignStage, depth: number): MapDefinitio
     id: stage.id, version: 1, width: MAZE_WIDTH, height: MAZE_HEIGHT,
     palette: { tint: 0xffffff, background: theme === 'grassland' ? 0x333529 : theme === 'snowplains' ? 0x899499 : 0x292723, obstacle: 0x686b78, accent: 0xb3a17e },
     originOffset: { x: 0, y: 0 }, renderMode: 'tiled', tileSize: { width: 32, height: 32 },
-    arena: { x: 64, y: 64, width: MAZE_WIDTH - 128, height: MAZE_HEIGHT - 128 },
+    arena: { x: MAZE_CELL, y: MAZE_CELL, width: MAZE_WIDTH - MAZE_CELL * 2, height: MAZE_HEIGHT - MAZE_CELL * 2 },
     tilesets: [...environmentAssets(theme), ...(theme === 'dungeon' ? [] : environmentAssets('dungeon')
       .filter(asset => asset.id === 'flare-dungeon-props').map(asset => ({ ...asset, firstGid: 3001 })))],
     tileLayers: [], groundStamps, collision, props,
-    markers: [{ id: 'player', kind: 'player_spawn', position: mazeRoomPosition(0) },
+    markers: [{ id: 'player', kind: 'player_spawn', position: mazeRoomPosition(layout.playerRoom ?? 0) },
       ...layout.spawnRooms.map((room,index) => ({ id: `spawn-${index}`, kind: 'enemy_spawn' as const, position: mazeRoomPosition(room) }))],
-    caches: layout.cacheRooms.map((room,index) => ({ id: `${stage.id}-cache-${index}`, position: mazeRoomPosition(room), radius: 44 })),
+    caches: layout.cacheRooms.map((room,index) => ({ id: index === 0 ? `${stage.id}-cache` : `${stage.id}-cache-${index}`, position: mazeRoomPosition(room), radius: 44 })),
     obelisks: layout.obeliskRooms.map((room,index) => ({ id: `${stage.id}-obelisk-${index}`, position: mazeRoomPosition(room), radius: 44 })),
     restorationSites: [{ id: `${stage.id}-spring`, position: mazeRoomPosition(layout.springRoom), radius: 64, healthFraction: .35, manaFraction: .6 }],
     hazards: layout.hazardRooms.map((room,index) => ({ id: `${stage.id}-rune-${index}`, position: mazeRoomPosition(room),

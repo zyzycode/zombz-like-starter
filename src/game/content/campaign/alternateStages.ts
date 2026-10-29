@@ -7,7 +7,7 @@ export const GROVE_ALTERNATE: CampaignStage = {
   biome: 'Заросшая роща',
   biomeId: 'grove',
   color: '#78c99b',
-  description: 'Ближний бой без стрелков и рун. Обходи тяжёлого стража, а броню элитного скелета пробивай магией. Тайник — на востоке, источник — на юго-западе.',
+  description: 'Ближний бой без стрелков и рун. Обходи тяжёлого стража, а броню элитного скелета пробивай магией. Исследуй боковые комнаты ради тайников и источника.',
   encounters: [
     [{ archetypeId: 'grunt', count: 3 }],
     [{ archetypeId: 'grunt', count: 2 }, { archetypeId: 'grunt', count: 1, elite: 'armored' }, { archetypeId: 'brute', count: 1 }],
@@ -21,7 +21,7 @@ export const RUINS_ALTERNATE: CampaignStage = {
   biome: 'Пепельные руины',
   biomeId: 'ruins',
   color: '#e6b878',
-  description: 'Стрелки держат открытые проходы, а стремительный охотник теснит в ближнем бою. Прячься за колоннами и активируй один обелиск на севере. Тайник — на юго-востоке, источник — на западе.',
+  description: 'Стрелки держат открытые проходы, а стремительный охотник теснит в ближнем бою. Используй повороты стен против стрелков и активируй один обелиск. В боковых комнатах ищи тайники и источник.',
   encounters: [
     [{ archetypeId: 'ranged', count: 2 }, { archetypeId: 'grunt', count: 1 }],
     [{ archetypeId: 'ranged', count: 1 }, { archetypeId: 'runner', count: 2 }, { archetypeId: 'runner', count: 1, elite: 'swift' }],

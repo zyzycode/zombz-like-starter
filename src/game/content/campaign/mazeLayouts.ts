@@ -1,13 +1,14 @@
 import type { Vector2 } from '@/shared/types/game';
 
-export const MAZE_WIDTH = 2304;
-export const MAZE_HEIGHT = 1728;
-export const MAZE_CELL = 64;
+export const MAZE_WIDTH = 3456;
+export const MAZE_HEIGHT = 2592;
+export const MAZE_CELL = 96;
 export const MAZE_COLUMNS = MAZE_WIDTH / MAZE_CELL;
 export const MAZE_ROWS = MAZE_HEIGHT / MAZE_CELL;
 
 type Link = readonly [number, number];
 export type MazeLayout = {
+  playerRoom?: number;
   links: readonly Link[];
   spawnRooms: readonly number[];
   cacheRooms: readonly number[];
@@ -16,7 +17,7 @@ export type MazeLayout = {
   hazardRooms: readonly number[];
 };
 
-/** Twenty 320px rooms; 192px-wide passages leave clearance for the largest enemy. */
+/** Twenty 480px rooms connected by 288px-wide passages. */
 export const MAZE_LAYOUTS: Readonly<Record<string, MazeLayout>> = {
   'grove-maze': {
     links: [[0,1],[1,2],[2,3],[3,4],[2,7],[5,6],[6,7],[7,8],[8,9],
@@ -34,6 +35,27 @@ export const MAZE_LAYOUTS: Readonly<Record<string, MazeLayout>> = {
     spawnRooms: [5,8,13,18], cacheRooms: [1,11], obeliskRooms: [4,19], springRoom: 6, hazardRooms: [3,16],
   },
 };
+
+/** Earlier stages reuse biome layouts with distinct orientation and their original objective counts. */
+export function campaignMazeLayout(stageId: string, biomeId: string): MazeLayout {
+  if (MAZE_LAYOUTS[stageId]) return MAZE_LAYOUTS[stageId];
+  const base = MAZE_LAYOUTS[`${biomeId}-maze`];
+  if (!base) throw new Error(`Missing maze biome: ${biomeId}`);
+  const horizontal = stageId.endsWith('-2');
+  const vertical = stageId.endsWith('-alt');
+  const room = (id: number) => (vertical ? 3 - Math.floor(id / 5) : Math.floor(id / 5)) * 5
+    + (horizontal ? 4 - id % 5 : id % 5);
+  const objectiveCount = stageId === 'ruins-1' || stageId === 'ruins-alt' ? 1
+    : stageId === 'ruins-2' || stageId === 'frost-1' ? 2 : 0;
+  const hazardCount = stageId === 'grove-1' || stageId === 'grove-alt' ? 0
+    : stageId === 'grove-2' || stageId === 'ruins-alt' ? 1 : stageId === 'frost-2' ? 3 : 2;
+  return {
+    playerRoom: room(0), links: base.links.map(([a, b]) => [room(a), room(b)]),
+    spawnRooms: base.spawnRooms.map(room), cacheRooms: base.cacheRooms.map(room),
+    obeliskRooms: base.obeliskRooms.slice(0, objectiveCount).map(room),
+    springRoom: room(base.springRoom), hazardRooms: [...base.hazardRooms, 12].slice(0, hazardCount).map(room),
+  };
+}
 
 export function mazeRoomPosition(index: number): Vector2 {
   return { x: (2 + index % 5 * 7 + 2.5) * MAZE_CELL, y: (2 + Math.floor(index / 5) * 6 + 2.5) * MAZE_CELL };
